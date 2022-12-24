@@ -5,22 +5,23 @@ import 'md5.dart';
 
 abstract class Hashing {
 
-  static ThreadLocal<Uint8List> threadBuffer = new ThreadLocal<Uint8List>() {
-    @Override
-    public byte[] initialValue() {
-      return new byte[512];
-    }
-  };
+  static Uint8List threadBuffer = Uint8List.fromList(List.generate(512, (index) => 0  ));
+  // static ThreadLocal<Uint8List> threadBuffer = new ThreadLocal<Uint8List>() {
+  //   @Override
+  //   public byte[] initialValue() {
+  //     return new byte[512];
+  //   }
+  // };
 
   static Uint8List hashUnit(String unit) {
     final int n = unit.length;
     final int bufferLen = n << 1;
 
-    Uint8List buffer = threadBuffer.get();
+    Uint8List buffer = threadBuffer;
     if (buffer.length < bufferLen) {
       final int bit = 32 - Integer.numberOfLeadingZeros(bufferLen - 1);
-      buffer = new byte[1 << bit];
-      threadBuffer.set(buffer);
+      buffer = Uint8List.fromList(List.generate(1 << bit, (index) => 0  ));
+      threadBuffer = buffer;
     }
 
     final int encoded = Buffers.encodeUTF8(buffer, 0, unit);
