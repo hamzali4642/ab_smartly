@@ -1,4 +1,6 @@
 import 'dart:typed_data';
+import 'package:flutter/widgets.dart';
+import 'dart:io';
 
 import '../buffers.dart';
 import 'md5.dart';
@@ -6,6 +8,7 @@ import 'md5.dart';
 abstract class Hashing {
 
   static Uint8List threadBuffer = Uint8List.fromList(List.generate(512, (index) => 0  ));
+
   // static ThreadLocal<Uint8List> threadBuffer = new ThreadLocal<Uint8List>() {
   //   @Override
   //   public byte[] initialValue() {
@@ -19,12 +22,12 @@ abstract class Hashing {
 
     Uint8List buffer = threadBuffer;
     if (buffer.length < bufferLen) {
-      final int bit = 32 - Integer.numberOfLeadingZeros(bufferLen - 1);
+      final int bit = 32 - (32 - (bufferLen - 1).bitLength);
       buffer = Uint8List.fromList(List.generate(1 << bit, (index) => 0  ));
       threadBuffer = buffer;
     }
 
     final int encoded = Buffers.encodeUTF8(buffer, 0, unit);
-    return MD5.digestBase64UrlNoPadding(buffer, 0, encoded);
+    return MD5.digestBase64UrlNoPadding(buffer, offset: 0, len: encoded);
   }
 }
