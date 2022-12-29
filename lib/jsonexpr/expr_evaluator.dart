@@ -1,21 +1,21 @@
+import '../helper/number_format/number_format.dart';
 import 'evaluator.dart';
 import 'operator.dart';
-import 'package:intl/intl.dart';
 
 class ExprEvaluator extends Evaluator {
+  static final NumberFormat formatter = _getValue();
 
-
-  static final ThreadLocal<NumberFormat> formatter = ThreadLocal<NumberFormat>.withInitial(() {
-    final formatter = NumberFormat.decimalPattern();
-    formatter.maximumFractionDigits = 15;
-    formatter.minimumFractionDigits = 0;
-    formatter.minimumIntegerDigits = 1;
+  static NumberFormat _getValue() {
+    final f = NumberFormat.decimalPattern();
+    f.maximumFractionDigits = 15;
+    f.minimumFractionDigits = 0;
+    f.minimumIntegerDigits = 1;
     return formatter;
-  });
+  }
 
   final Map<String, Operator> operators;
   final Map<String, Object> vars;
- 
+
   ExprEvaluator(this.operators, this.vars);
 
   @override
@@ -70,7 +70,7 @@ class ExprEvaluator extends Evaluator {
     } else if (x is bool) {
       return x.toString();
     } else if (x is num) {
-      return formatter.value.format(x);
+      return formatter.format(x);
     }
     return "";
   }
