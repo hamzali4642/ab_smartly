@@ -14,7 +14,7 @@ class ExprEvaluator extends Evaluator {
   }
 
   final Map<String, Operator> operators;
-  final Map<String, Object> vars;
+  final Map<String, dynamic> vars;
 
   ExprEvaluator(this.operators, this.vars);
 
