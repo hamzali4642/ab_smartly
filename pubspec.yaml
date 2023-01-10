@@ -1,7 +1,7 @@
 name: ab_smartly
 description: A new Flutter project.
 version: 0.0.1
-homepage:
+homepage: https://github.com/hamzali4642/ab_smartly
 
 environment:
   sdk: '>=2.18.5 <3.0.0'
