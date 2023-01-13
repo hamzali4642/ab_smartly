@@ -19,7 +19,7 @@ class ExprEvaluator extends Evaluator {
   ExprEvaluator(this.operators, this.vars);
 
   @override
-  dynamic evaluate(Object expr) {
+  dynamic evaluate(dynamic expr) {
     if (expr is List) {
       return operators['and']?.evaluate(this, expr);
     } else if (expr is Map) {
@@ -49,7 +49,7 @@ class ExprEvaluator extends Evaluator {
   }
 
   @override
-  num numberConvert(Object x) {
+  num? numberConvert(dynamic x) {
     if (x is num) {
       return (x is double) ? x : x.toDouble();
     } else if (x is bool) {
@@ -64,7 +64,7 @@ class ExprEvaluator extends Evaluator {
   }
 
   @override
-  String stringConvert(Object x) {
+  String? stringConvert(dynamic x) {
     if (x is String) {
       return x;
     } else if (x is bool) {
@@ -72,26 +72,26 @@ class ExprEvaluator extends Evaluator {
     } else if (x is num) {
       return formatter.format(x);
     }
-    return "";
+    return null;
   }
 
   @override
   dynamic extractVar(String path) {
     final frags = path.split("/");
 
-    Object target = vars != null ? vars : [];
+    dynamic target = vars;
 
     for (final frag in frags) {
-      Object? value;
+      dynamic? value;
       if (target is List) {
-        final list = target as List<Object>;
+        final list = target;
         try {
           value = list[int.parse(frag)];
         } catch (e) {
           value = null;
         }
       } else if (target is Map) {
-        final map = target as Map<String, Object>;
+        final map = target as Map<String, dynamic>;
         value = map[frag];
       }
 
@@ -106,7 +106,8 @@ class ExprEvaluator extends Evaluator {
     return target;
   }
 
-  dynamic compare(Object lhs, Object rhs) {
+  @override
+  dynamic compare(dynamic lhs, dynamic rhs) {
     if (lhs == null) {
       return rhs == null ? 0 : null;
     } else if (rhs == null) {
@@ -116,18 +117,16 @@ class ExprEvaluator extends Evaluator {
     if (lhs is num) {
       final rvalue = numberConvert(rhs);
       if (rvalue != null) {
-        return (lhs as num).compareTo(rvalue);
+        return (lhs).compareTo(rvalue);
       }
     } else if (lhs is String) {
       final rvalue = stringConvert(rhs);
       if (rvalue != null) {
-        return (lhs as String).compareTo(rvalue);
+        return (lhs).compareTo(rvalue);
       }
     } else if (lhs is bool) {
       final rvalue = booleanConvert(rhs);
-      if (rvalue != null) {
-        return lhs == rvalue;
-      }
+      return lhs == rvalue;
     } else if (lhs.runtimeType == rhs.runtimeType && lhs == rhs) {
       return 0;
     }

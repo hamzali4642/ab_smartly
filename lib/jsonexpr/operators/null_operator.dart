@@ -4,7 +4,7 @@ import '../evaluator.dart';
 
 class NullOperator extends UnaryOperator {
   @override
-  dynamic unary(Evaluator evaluator, Object arg) {
+  dynamic unary(Evaluator evaluator, dynamic arg) {
     return arg == null;
   }
 }

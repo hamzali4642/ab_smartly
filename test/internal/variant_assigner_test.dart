@@ -63,9 +63,9 @@ void main(){
     };
 
     data.forEach((key, value) {
-
       var unitUID = key;
       var expectedVariants = value;
+
       final List<List<double>> splits = [
         [0.5, 0.5],
         [0.5, 0.5],

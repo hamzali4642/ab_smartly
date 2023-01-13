@@ -4,7 +4,7 @@ import 'binary_operator.dart';
 
 class MatchOperator extends BinaryOperator {
   @override
-  dynamic binary(Evaluator evaluator, Object lhs, Object rhs) {
+  dynamic binary(Evaluator evaluator, dynamic lhs, dynamic rhs) {
     final text = evaluator.stringConvert(lhs);
     if (text != null) {
       final pattern = evaluator.stringConvert(rhs);

@@ -3,7 +3,7 @@ import 'binary_operator.dart';
 
 class EqualsOperator extends BinaryOperator {
   @override
-  dynamic binary(Evaluator evaluator, Object lhs, Object rhs) {
+  dynamic binary(Evaluator evaluator, dynamic lhs, dynamic rhs) {
     final result = evaluator.compare(lhs, rhs);
     if (result == null) {
       return null;
