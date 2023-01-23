@@ -8,7 +8,7 @@ class Attribute {
   Attribute({required this.name, required this.value, required this.setAt});
 
   @override
-  bool operator ==(Object other) {
+  bool operator ==(dynamic other) {
     return identical(this, other) ||
         other is Attribute &&
             setAt == other.setAt &&
