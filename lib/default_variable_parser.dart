@@ -11,7 +11,7 @@ class DefaultVariableParser implements VariableParser {
   DefaultVariableParser() {
     final ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.enable(MapperFeature.USE_STATIC_TYPING);
-    this.reader_ = objectMapper
+    reader_ = objectMapper
         .readerFor(TypeFactory.defaultInstance().constructMapType(
         HashMap.class, String.class, Object.class));
   }

@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 class GoalAchievement {
   String name;
   int achievedAt;
-  Map<String, Object> properties;
+  Map<String, dynamic> properties;
 
   GoalAchievement({required this.name, required this.achievedAt, required this.properties});
 

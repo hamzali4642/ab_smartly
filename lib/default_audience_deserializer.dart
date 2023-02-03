@@ -1,20 +1,19 @@
- import 'dart:convert';
+import 'dart:convert';
 import 'audience_deserializer.dart';
 
- class DefaultAudienceDeserializer implements AudienceDeserializer {
-   static final Logger log = Logger('DefaultAudienceDeserializer');
+class DefaultAudienceDeserializer implements AudienceDeserializer {
+  final JsonDecoder decoder;
 
-   final JsonDecoder decoder;
+  DefaultAudienceDeserializer() : decoder = const JsonDecoder();
 
-   DefaultAudienceDeserializer() : decoder = const JsonDecoder();
+  @override
+  Map<String, dynamic>? deserialize(List<int> bytes, int offset, int length) {
+    try {
 
-   @override
-   Map<String, dynamic> deserialize(List<int> bytes, int offset, int length) {
-     try {
-       return decoder.convert((bytes.sublist(offset, length)));
-     } catch (e) {
-       log.severe(e);
-       return null;
-     }
-   }
- }
+      return decoder.convert(bytes.sublist(offset, length));
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+}

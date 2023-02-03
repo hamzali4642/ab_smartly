@@ -1,11 +1,11 @@
 import 'package:ab_smartly/jsonexpr/evaluator.dart';
 import 'package:ab_smartly/jsonexpr/evaluator.mocks.dart';
-import 'package:ab_smartly/jsonexpr/operators/greater_than_or_equal_operator.dart';
+import 'package:ab_smartly/jsonexpr/operators/greater_then_or_equal_operator.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
 void main() {
-  final GreaterThanOrEqualOperator operator = GreaterThanOrEqualOperator();
+  final GreaterThenOrEqualOperator operator = GreaterThenOrEqualOperator();
   final Evaluator evaluator = MockEvaluator();
 
   test("testEvaluate", (){

@@ -30,7 +30,7 @@ class DefaultHTTPClientConfig {
     return this;
   }
 
-   long getConnectionRequestTimeout() {
+   int getConnectionRequestTimeout() {
     return connectionRequestTimeout_;
   }
 
@@ -48,7 +48,7 @@ class DefaultHTTPClientConfig {
     return this;
   }
 
-   long getRetryInterval() {
+   int getRetryInterval() {
     return retryInterval_;
   }
 
@@ -66,7 +66,7 @@ class DefaultHTTPClientConfig {
     return this;
   }
 
-   Provider securityProvider_ = null;
+   Provider? securityProvider_;
    int connectTimeout_ = 3000;
    int connectionKeepAlive_ = 30000;
    int connectionRequestTimeout_ = 1000;

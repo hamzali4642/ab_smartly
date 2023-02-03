@@ -1,11 +1,11 @@
 import 'package:ab_smartly/jsonexpr/evaluator.dart';
 import 'package:ab_smartly/jsonexpr/evaluator.mocks.dart';
-import 'package:ab_smartly/jsonexpr/operators/less_than_or_eqal_operator.dart';
+import 'package:ab_smartly/jsonexpr/operators/less_then_or_eqal_operator.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
 void main() {
-  final LessThanOrEqualOperator operator = LessThanOrEqualOperator();
+  final LessThenOrEqualOperator operator = LessThenOrEqualOperator();
   final Evaluator evaluator = MockEvaluator();
 
   test("testEvaluate", (){

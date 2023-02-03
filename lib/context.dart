@@ -1,5 +1,6 @@
  import 'dart:core';
 import 'dart:core';
+import 'dart:core';
 
 import 'package:ab_smartly/variable_parser.dart';
 import 'audience_matcher.dart';
@@ -9,6 +10,7 @@ import 'context_data.dart';
 import 'context_data_provider.dart';
 import 'context_event_handler.dart';
 import 'context_event_logger.dart';
+import 'internal/variant_assigner.dart';
 import 'java/time/clock.dart';
 import 'java_system_classes/closeable.dart';
 import 'json/attribute.dart';
@@ -18,7 +20,7 @@ import 'json/goal_achievement.dart';
 class Context implements Closeable {
 
 
-  Context.create(Clock clock,  ContextConfig config,
+  static Context create(Clock clock,  ContextConfig config,
        ScheduledExecutorService scheduler,
        Future<ContextData> dataFuture,  ContextDataProvider dataProvider,
        ContextEventHandler eventHandler, ContextEventLogger eventLogger,
@@ -46,7 +48,7 @@ class Context implements Closeable {
     audienceMatcher_ = audienceMatcher;
     scheduler_ = scheduler;
 
-    units_ = new HashMap<String, String>();
+    units_ = Map<String, String>();
 
     final Map<String, String> units = config.getUnits();
     if (units != null) {
@@ -56,15 +58,15 @@ class Context implements Closeable {
     assigners_ = new HashMap<String, VariantAssigner>(units_.size());
     hashedUnits_ = new HashMap<String, byte[]>(units_.size());
 
-    final Map<String, Object> attributes = config.getAttributes();
+    final Map<String, dynamic> attributes = config.getAttributes();
     if (attributes != null) {
     setAttributes(attributes);
     }
 
-    final Map<String, Integer> overrides = config.getOverrides();
-    overrides_ = (overrides != null) ? new HashMap<String, Integer>(overrides) : new HashMap<String, Integer>();
+    final Map<String, int> overrides = config.getOverrides();
+    overrides_ = (overrides != null) ? Map<String, int>(overrides) : Map<String, int>();
 
-    final Map<String, Integer> cassignments = config.getCustomAssignments();
+    final Map<String, int> cassignments = config.getCustomAssignments();
     cassignments_ = (cassignments != null) ? new HashMap<String, Integer>(cassignments)
         : new HashMap<String, Integer>();
 
@@ -113,19 +115,19 @@ class Context implements Closeable {
     }
   }
 
-  public boolean isReady() {
+  bool isReady() {
     return data_ != null;
   }
 
-  public boolean isFailed() {
+  bool isFailed() {
     return failed_;
   }
 
-  public boolean isClosed() {
+  bool isClosed() {
     return closed_.get();
   }
 
-  public boolean isClosing() {
+  bool isClosing() {
     return !closed_.get() && closing_.get();
   }
 
@@ -142,7 +144,7 @@ class Context implements Closeable {
   }
   }
 
-  public Context waitUntilReady() {
+  Context waitUntilReady() {
     if (data_ == null) {
       final CompletableFuture<Void> future = readyFuture_; // cache here to avoid locking
       if (future != null && !future.isDone()) {
@@ -152,12 +154,12 @@ class Context implements Closeable {
     return this;
   }
 
-  public String[] getExperiments() {
+  List<String> getExperiments() {
     checkReady(true);
 
     try {
       dataLock_.readLock().lock();
-      final String[] experimentNames = new String[data_.experiments.length];
+      final List<String> experimentNames = new String[data_.experiments.length];
 
       int index = 0;
       for (final Experiment experiment : data_.experiments) {
@@ -170,7 +172,7 @@ class Context implements Closeable {
     }
   }
 
-  public ContextData getData() {
+  ContextData getData() {
     checkReady(true);
 
     try {
@@ -181,43 +183,44 @@ class Context implements Closeable {
     }
   }
 
-  public void setOverride( final String experimentName, final int variant) {
+  void setOverride( final String experimentName, final int variant) {
     checkNotClosed();
 
     Concurrency.putRW(contextLock_, overrides_, experimentName, variant);
   }
 
-  public Integer getOverride( final String experimentName) {
+  int getOverride( final String experimentName) {
     return Concurrency.getRW(contextLock_, overrides_, experimentName);
   }
 
-  public void setOverrides( final Map<String, Integer> overrides) {
-    for (Map.Entry<String, Integer> entry : overrides.entrySet()) {
+  void setOverrides( Map<String, int> overrides) {
+
+    for (Map.Entry<String, int> entry : overrides.entrySet()) {
     String key = entry.getKey();
-    Integer value = entry.getValue();
+    int value = entry.getValue();
     setOverride(key, value);
     }
   }
 
-  public void setCustomAssignment( final String experimentName, final int variant) {
+  void setCustomAssignment( String experimentName, int variant) {
     checkNotClosed();
 
     Concurrency.putRW(contextLock_, cassignments_, experimentName, variant);
   }
 
-  public Integer getCustomAssignment( final String experimentName) {
+  int getCustomAssignment( String experimentName) {
     return Concurrency.getRW(contextLock_, cassignments_, experimentName);
   }
 
-  public void setCustomAssignments( final Map<String, Integer> customAssignments) {
+  void setCustomAssignments( Map<String, int> customAssignments) {
     for (Map.Entry<String, Integer> entry : customAssignments.entrySet()) {
     String key = entry.getKey();
-    Integer value = entry.getValue();
+    int value = entry.getValue();
     setCustomAssignment(key, value);
     }
   }
 
-  public String getUnit( final String unitType) {
+  String getUnit( final String unitType) {
     final ReentrantReadWriteLock.ReadLock readLock = contextLock_.readLock();
     try {
       readLock.lock();
@@ -227,7 +230,7 @@ class Context implements Closeable {
     }
   }
 
-  public void setUnit( final String unitType,  final String uid) {
+  void setUnit( final String unitType,  final String uid) {
     checkNotClosed();
 
     final ReentrantReadWriteLock.WriteLock writeLock = contextLock_.writeLock();
@@ -250,17 +253,17 @@ class Context implements Closeable {
     }
   }
 
-  public Map<String, String> getUnits() {
+  Map<String, String> getUnits() {
     final ReentrantReadWriteLock.ReadLock readLock = contextLock_.readLock();
     try {
       readLock.lock();
-      return new HashMap<String, String>(units_);
+      return Map<String, String>(units_);
     } finally {
       readLock.unlock();
     }
   }
 
-  public void setUnits( final Map<String, String> units) {
+  void setUnits( Map<String, String> units) {
     for (Map.Entry<String, String> entry : units.entrySet()) {
     String key = entry.getKey();
     String value = entry.getValue();
@@ -268,13 +271,13 @@ class Context implements Closeable {
     }
   }
 
-  public Object getAttribute( final String name) {
+  dynamic getAttribute( final String name) {
     final ReentrantReadWriteLock.ReadLock readLock = contextLock_.readLock();
     try {
       readLock.lock();
       for (int i = attributes_.size(); i-- > 0;) {
         final Attribute attr = attributes_.get(i);
-        if (name.equals(attr.name)) {
+        if (name == attr.name) {
           return attr.value;
         }
       }
@@ -285,14 +288,14 @@ class Context implements Closeable {
     }
   }
 
-  public void setAttribute( final String name, @Nullable final Object value) {
+  void setAttribute( String name, dynamic value) {
     checkNotClosed();
 
     Concurrency.addRW(contextLock_, attributes_, new Attribute(name, value, clock_.millis()));
   }
 
-  public Map<String, Object> getAttributes() {
-    final HashMap<String, Object> result = new HashMap<String, Object>(attributes_.size());
+  Map<String, dynamic> getAttributes() {
+    final Map<String, dynamic> result = Map<String, dynamic>(attributes_.size());
     final ReentrantReadWriteLock.ReadLock readLock = contextLock_.readLock();
     try {
       readLock.lock();
@@ -305,8 +308,8 @@ class Context implements Closeable {
     }
   }
 
-  public void setAttributes( final Map<String, Object> attributes) {
-    for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+  void setAttributes( final Map<String, dynamic> attributes) {
+    for (Map.Entry<String, dynamic> entry : attributes.entrySet()) {
     String key = entry.getKey();
     Object value = entry.getValue();
     setAttribute(key, value);
@@ -326,7 +329,7 @@ class Context implements Closeable {
 
   void queueExposure(final Assignment assignment) {
     if (assignment.exposed.compareAndSet(false, true)) {
-      final Exposure exposure = new Exposure();
+      final Exposure exposure = Exposure();
       exposure.id = assignment.id;
       exposure.name = assignment.name;
       exposure.unit = assignment.unitType;
@@ -353,13 +356,13 @@ class Context implements Closeable {
     }
   }
 
-  public int peekTreatment( final String experimentName) {
+  int peekTreatment( final String experimentName) {
     checkReady(true);
 
     return getAssignment(experimentName).variant;
   }
 
-  public Map<String, List<String>> getVariableKeys() {
+  Map<String, List<String>> getVariableKeys() {
     checkReady(true);
 
     final Map<String, List<String>> variableKeys = new HashMap<String, List<String>>(indexVariables_.size());
@@ -382,7 +385,7 @@ class Context implements Closeable {
     return variableKeys;
   }
 
-  public Object getVariableValue( final String key, final Object defaultValue) {
+  dynamic getVariableValue( final String key, final dynamic defaultValue) {
     checkReady(true);
 
     final Assignment assignment = getVariableAssignment(key);
@@ -400,7 +403,7 @@ class Context implements Closeable {
     return defaultValue;
   }
 
-  public Object peekVariableValue( final String key, final Object defaultValue) {
+  Object peekVariableValue( final String key, final Object defaultValue) {
     checkReady(true);
 
     final Assignment assignment = getVariableAssignment(key);
@@ -417,7 +420,7 @@ class Context implements Closeable {
   public void track( final String goalName, final Map<String, Object> properties) {
     checkNotClosed();
 
-    final GoalAchievement achievement = new GoalAchievement();
+    final GoalAchievement achievement = GoalAchievement();
     achievement.achievedAt = clock_.millis();
     achievement.name = goalName;
     achievement.properties = (properties == null) ? null : new TreeMap<String, Object>(properties);
@@ -986,18 +989,18 @@ class Context implements Closeable {
   AudienceMatcher audienceMatcher_;
   ScheduledExecutorService scheduler_;
   Map<String, String> units_;
-  boolean failed_;
+  bool failed_;
 
-  final ReentrantReadWriteLock dataLock_ = new ReentrantReadWriteLock();
+  final ReentrantReadWriteLock dataLock_ = ReentrantReadWriteLock();
   ContextData data_;
   Map<String, ExperimentVariables> index_;
   Map<String, List<ExperimentVariables>> indexVariables_;
 
   final ReentrantReadWriteLock contextLock_ = new ReentrantReadWriteLock();
 
-  final Map<String, byte[]> hashedUnits_;
+  final Map<String, Uint8List> hashedUnits_;
   final Map<String, VariantAssigner> assigners_;
-  final Map<String, Assignment> assignmentCache_ = new HashMap<String, Assignment>();
+  final Map<String, Assignment> assignmentCache_ = Map<String, Assignment>();
 
   final ReentrantLock eventLock_ = new ReentrantLock();
   final List<Exposure> exposures_ = [];

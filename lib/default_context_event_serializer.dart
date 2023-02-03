@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'context_event_serializer.dart';
 import 'json/publish_event.dart';
 
@@ -11,16 +9,16 @@ class DefaultContextEventSerializer implements ContextEventSerializer {
       final objectMapper = ObjectMapper();
       writer_ = objectMapper.writerFor(PublishEvent);
     } else {
-      this.writer_ = writer;
+      writer_ = writer;
     }
   }
 
   @override
-  Uint8List serialize(PublishEvent event) {
+  List<int>? serialize(PublishEvent event) {
     try {
       return writer_.writeValueAsBytes(event);
     } catch (e) {
-      log.error("", e);
+      print(e);
       return null;
     }
   }

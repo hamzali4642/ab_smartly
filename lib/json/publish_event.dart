@@ -18,7 +18,7 @@ class PublishEvent {
   PublishEvent({required this.hashed, required this.units, required this.publishedAt, required this.exposures, required this.goals, required this.attributes});
 
   @override
-  bool operator ==(Object o) {
+  bool operator ==(dynamic o) {
     if (identical(this, o)) return true;
     return o is PublishEvent &&
         o.hashed == hashed &&

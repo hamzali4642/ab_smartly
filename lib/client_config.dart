@@ -87,7 +87,7 @@ class ClientConfig {
     return this;
   }
 
-  late String endpoint_;
+  String? endpoint_;
   late String apiKey_;
   late String environment_;
   late String application_;

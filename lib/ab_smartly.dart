@@ -32,22 +32,14 @@ class ABSmartly implements Closeable {
         throw Exception("Missing Client instance");
       }
 
-      if (contextDataProvider_ == null) {
-        contextDataProvider_ = DefaultContextDataProvider(client_!);
-      }
+      contextDataProvider_ ??= DefaultContextDataProvider(client_!);
 
-      if (contextEventHandler_ == null) {
-        contextEventHandler_ = DefaultContextEventHandler(client_!);
-      }
+      contextEventHandler_ ??= DefaultContextEventHandler(client_!);
     }
 
-    if (variableParser_ == null) {
-      variableParser_ = DefaultVariableParser();
-    }
+    variableParser_ ??= DefaultVariableParser();
 
-    if (audienceDeserializer_ == null) {
-        audienceDeserializer_ =  DefaultAudienceDeserializer();
-    }
+    audienceDeserializer_ ??= DefaultAudienceDeserializer();
 
     if (scheduler_ == null) {
       // scheduler_ = new ScheduledThreadPoolExecutor(1);
@@ -72,30 +64,30 @@ class ABSmartly implements Closeable {
 
   @override
   void close() {
-    // if (client_ != null) {
-    //   client_!.close();
-    //   client_ = null;
-    // }
-    //
-    // if (scheduler_ != null) {
-    //   try {
-    //     scheduler_.awaitTermination(5000, TimeUnit.MILLISECONDS);
-    //   }
-    // catch
-    // (
-    // InterruptedException
-    // ignored) {}
-    // scheduler_ = null;
-    // }
+    if (client_ != null) {
+      client_!.close();
+      client_ = null;
+    }
+
+    if (scheduler_ != null) {
+      try {
+        scheduler_.awaitTermination(5000, TimeUnit.MILLISECONDS);
+      }
+    catch
+    (
+    InterruptedException
+    ignored) {}
+    scheduler_ = null;
+    }
     client_?.close();
   }
 
   Client? client_;
   ContextDataProvider? contextDataProvider_;
-  late ContextEventHandler contextEventHandler_;
+  late ContextEventHandler? contextEventHandler_;
   late ContextEventLogger contextEventLogger_;
-  late VariableParser variableParser_;
-  late AudienceDeserializer audienceDeserializer_;
+  late VariableParser? variableParser_;
+  late AudienceDeserializer? audienceDeserializer_;
 
   //late ScheduledExecutorService scheduler_;
 
