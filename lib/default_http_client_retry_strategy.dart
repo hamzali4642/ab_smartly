@@ -21,8 +21,8 @@ import 'dart:math';
    }
 
    @override
-   TimeValue getRetryInterval(HttpResponse response, int execCount, HttpContext context) {
-     return TimeValue(milliseconds: MIN_RETRY_INTERVAL + (((1 << (execCount - 1)) * retryIntervalUs) ~/ 1000));
+   Duration getRetryInterval(HttpResponse response, int execCount, HttpContext context) {
+     return Duration(milliseconds: MIN_RETRY_INTERVAL + (((1 << (execCount - 1)) * retryIntervalUs) ~/ 1000));
    }
 
    static final Set<int> retryableCodes = {502, 503}.toSet();

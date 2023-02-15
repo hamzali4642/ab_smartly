@@ -5,16 +5,6 @@ class DefaultHTTPClientConfig {
     return DefaultHTTPClientConfig();
   }
 
-  DefaultHTTPClientConfig();
-
-   Provider getSecurityProvider() {
-    return securityProvider_;
-  }
-
-   DefaultHTTPClientConfig setSecurityProvider(Provider securityProvider) {
-    securityProvider_ = securityProvider;
-    return this;
-  }
 
    int getConnectTimeout() => connectTimeout_;
 
@@ -66,7 +56,6 @@ class DefaultHTTPClientConfig {
     return this;
   }
 
-   Provider? securityProvider_;
    int connectTimeout_ = 3000;
    int connectionKeepAlive_ = 30000;
    int connectionRequestTimeout_ = 1000;

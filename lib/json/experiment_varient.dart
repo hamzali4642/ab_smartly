@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 class ExperimentVariant {
-  String name;
-  String config;
+  late String name;
+  late String config;
 
   ExperimentVariant({required this.name, required this.config});
 
@@ -19,6 +19,18 @@ class ExperimentVariant {
   @override
   String toString() {
     return 'ExperimentVariant{name: $name, config: $config}';
+  }
+
+  ExperimentVariant.fromMap(Map<String, dynamic> data){
+    name = data["name"];
+    config = data["config"];
+  }
+
+  Map<String, dynamic> toMap(){
+    return{
+      "name" : name,
+      "config" : config,
+    };
   }
 }
 

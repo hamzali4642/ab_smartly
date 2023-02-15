@@ -8,22 +8,22 @@ class ClientConfig {
     return ClientConfig();
   }
 
-  static ClientConfig createFromProperties(Properties properties,
+  static ClientConfig createFromProperties(Map<String, dynamic> properties,
       [String? prefix]) {
     if (prefix == null) {
       return createFromProperties(properties, "");
     } else {
       return create()
-          .setEndpoint(properties.getProperty("${prefix}endpoint"))
-          .setEnvironment(properties.getProperty("${prefix}environment"))
-          .setApplication(properties.getProperty("${prefix}application"))
-          .setAPIKey(properties.getProperty("${prefix}apikey"));
+          .setEndpoint(properties["${prefix}endpoint"])
+          .setEnvironment(properties["${prefix}environment"])
+          .setApplication(properties["${prefix}application"])
+          .setAPIKey(properties["${prefix}apikey"]);
     }
   }
 
   ClientConfig();
 
-  String getEndpoint() {
+  String? getEndpoint() {
     return endpoint_;
   }
 
@@ -32,7 +32,7 @@ class ClientConfig {
     return this;
   }
 
-  String getAPIKey() {
+  String? getAPIKey() {
     return apiKey_;
   }
 
@@ -41,7 +41,7 @@ class ClientConfig {
     return this;
   }
 
-  String getEnvironment() {
+  String? getEnvironment() {
     return environment_;
   }
 
@@ -50,7 +50,7 @@ class ClientConfig {
     return this;
   }
 
-  String getApplication() {
+  String? getApplication() {
     return application_;
   }
 
@@ -88,9 +88,9 @@ class ClientConfig {
   }
 
   String? endpoint_;
-  late String apiKey_;
-  late String environment_;
-  late String application_;
+  late String? apiKey_;
+  late String? environment_;
+  late String? application_;
   late final Executor executor_;
   late ContextDataDeserializer deserializer_;
   late ContextEventSerializer serializer_;

@@ -3,6 +3,7 @@ import 'buffers.dart';
 import 'hashing/murmur3_32.dart';
 
 class VariantAssigner {
+  static double normalizer = 1.0 / 0xffffffff;
   static final Uint8List threadBuffer =
       Uint8List.fromList(List.generate(12, (index) => 0));
 
@@ -12,7 +13,6 @@ class VariantAssigner {
   //     return new byte[12];
   //   }
   // };
-  static double normalizer = 1.0 / 0xffffffff;
 
   VariantAssigner(Uint8List unitHash) {
     unitHash_ = Murmur3_32.digest(unitHash, 0);

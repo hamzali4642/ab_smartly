@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 class Unit {
-  String type;
-  String uid;
+  late String type;
+  late String uid;
 
   Unit({required this.type, required this.uid});
 
@@ -18,5 +18,16 @@ class Unit {
   @override
   String toString() {
     return 'Unit{type: $type, uid: $uid}';
+  }
+
+  Unit.fromMap(Map<String, dynamic> data){
+    type = data["type"];
+    uid = data["uid"];
+  }
+  Map<String, dynamic> toMap(){
+    return {
+      "type" : type,
+      "uid" : uid,
+    };
   }
 }

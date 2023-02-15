@@ -6,21 +6,21 @@ import 'experiment_varient.dart';
 import 'experimet_application.dart';
 
 class Experiment {
-  int id;
-  String name;
-  String unitType;
-  int iteration;
-  int seedHi;
-  int seedLo;
-  List<double> split;
-  int trafficSeedHi;
-  int trafficSeedLo;
-  List<double> trafficSplit;
-  int fullOnVariant;
-  List<ExperimentApplication> applications;
-  List<ExperimentVariant> variants;
-  bool audienceStrict;
-  String audience;
+  late int id;
+  late String name;
+  late String unitType;
+  late int iteration;
+  late int seedHi;
+  late int seedLo;
+  late List<double> split;
+  late int trafficSeedHi;
+  late int trafficSeedLo;
+  late List<double> trafficSplit;
+  late int fullOnVariant;
+  late List<ExperimentApplication> applications;
+  late List<ExperimentVariant> variants;
+  late bool audienceStrict;
+  late String audience;
 
   Experiment({
     required this.id,
@@ -75,5 +75,50 @@ class Experiment {
   @override
   String toString() {
     return "ContextExperiment{id=$id, name='$name', unitType='$unitType', iteration=$iteration, seedHi=$seedHi, seedLo=$seedLo, split=$split, trafficSeedHi=$trafficSeedHi, trafficSeedLo=$trafficSeedLo, trafficSplit=$trafficSplit, fullOnVariant=$fullOnVariant, applications=$applications, variants=$variants, audienceStrict=$audienceStrict, audience='$audience'}";
+  }
+
+  Experiment.fromMap(Map<String, dynamic> data){
+    id = data["id"];
+    name = data["name"];
+    unitType = data["unitType"];
+    iteration = data["iteration"];
+    seedHi = data["seedHi"];
+    seedLo = data["seedLo"];
+    split = data["split"];
+    trafficSeedHi = data["trafficSeedHi"];
+    trafficSeedLo = data["trafficSeedLo"];
+    trafficSplit = data["trafficSplit"];
+    fullOnVariant = data["fullOnVariant"];
+    List applications = data["applications"] ?? [];
+    this.applications = List.generate(applications.length, (index) => ExperimentApplication.fromMap(applications[index]));
+
+    List variants = data["variants"];
+    this.variants = List.generate(variants.length, (index) => ExperimentVariant.fromMap(variants[index]));
+
+    audienceStrict = data["audienceStrict"];
+    audience = data["audience"];
+  }
+
+  Map<String, dynamic> toMap(){
+    List applications = List.generate(this.applications.length, (index) => this.applications[index].toMap());
+    List variants = List.generate(this.variants.length, (index) => this.variants[index].toMap());
+
+    return {
+      "id" : id,
+      "name" : name,
+      "unitType" : unitType,
+      "iteration" : iteration,
+      "seedHi" : seedHi,
+      "seedLo" : seedLo,
+      "split" : split,
+      "trafficSeedHi" : trafficSeedHi,
+      "trafficSeedLo" : trafficSeedLo,
+      "trafficSplit" : trafficSplit,
+      "fullOnVariant" : fullOnVariant,
+      "applications" : applications,
+      "variants" : variants,
+      "audienceStrict" : audienceStrict,
+      "audience" : audience,
+    };
   }
 }

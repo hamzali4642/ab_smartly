@@ -1,24 +1,23 @@
-import 'context_data.dart';
+import 'dart:convert';
+
 import 'context_data_deserializer.dart';
+import 'json/context_data.dart';
 
  class DefaultContextDataDeserializer implements ContextDataDeserializer {
-   static final Logger log = Logger("DefaultContextDataDeserializer");
 
-   DefaultContextDataDeserializer() {
-     final objectMapper = ObjectMapper();
-     objectMapper.enable(MapperFeature.USE_STATIC_TYPING);
-     reader_ = objectMapper.readerFor(ContextData);
-   }
+
 
    @override
-  ContextData deserialize(final List<int> bytes, final int offset, final int length) {
+  ContextData? deserialize(final List<int> bytes, final int offset, final int length) {
      try {
-       return reader_.readValue(bytes, offset, length);
+
+       var data = utf8.decode(bytes);
+       var contextData = ContextData.fromMap(jsonDecode(data));
+       return contextData;
      } catch (e) {
-       log.error("", e);
+       print(e);
        return null;
      }
    }
 
-   late ObjectReader reader_;
  }

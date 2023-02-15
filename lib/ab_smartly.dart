@@ -6,7 +6,8 @@ import 'package:ab_smartly/variable_parser.dart';
 
 import 'ab_smartly_config.dart';
 import 'audience_deserializer.dart';
-import 'context_data.dart';
+import 'context.dart';
+import 'context_config.dart';
 import 'context_data_provider.dart';
 import 'context_event_handler.dart';
 import 'context_event_logger.dart';
@@ -14,6 +15,7 @@ import 'default_audience_deserializer.dart';
 import 'default_context_data_provider.dart';
 import 'default_context_event_handler.dart';
 import 'default_variable_parser.dart';
+import 'java/time/clock.dart';
 import 'java_system_classes/closeable.dart';
 import 'client.dart';
 
@@ -46,17 +48,17 @@ class ABSmartly implements Closeable {
     }
   }
 
-  //  Context createContext(ContextConfig config) {
-  //   return Context.create(Clock.systemUTC(), config, scheduler_, contextDataProvider_.getContextData(),
-  //       contextDataProvider_, contextEventHandler_, contextEventLogger_, variableParser_,
-  //       new AudienceMatcher(audienceDeserializer_));
-  // }
+   Context createContext(ContextConfig config) {
+    return Context.create(Clock.systemUTC(), config, scheduler_, contextDataProvider_.getContextData(),
+        contextDataProvider_, contextEventHandler_, contextEventLogger_, variableParser_,
+        new AudienceMatcher(audienceDeserializer_));
+  }
 
-  // Context createContextWith(ContextConfig config, ContextData data) {
-  //   return Context.create(Clock.systemUTC(), config, scheduler_, CompletableFuture.completedFuture(data),
-  //       contextDataProvider_, contextEventHandler_, contextEventLogger_, variableParser_,
-  //       new AudienceMatcher(audienceDeserializer_));
-  // }
+  Context createContextWith(ContextConfig config, ContextData data) {
+    return Context.create(Clock.systemUTC(), config, scheduler_, CompletableFuture.completedFuture(data),
+        contextDataProvider_, contextEventHandler_, contextEventLogger_, variableParser_,
+        new AudienceMatcher(audienceDeserializer_));
+  }
 
   Future<ContextData> getContextData() {
     return contextDataProvider_.getContextData();
@@ -74,9 +76,7 @@ class ABSmartly implements Closeable {
         scheduler_.awaitTermination(5000, TimeUnit.MILLISECONDS);
       }
     catch
-    (
-    InterruptedException
-    ignored) {}
+    (Exception e) {}
     scheduler_ = null;
     }
     client_?.close();

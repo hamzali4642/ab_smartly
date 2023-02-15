@@ -1,5 +1,5 @@
 class ExperimentApplication {
-  String name;
+  late String name;
 
   ExperimentApplication({required this.name});
 
@@ -16,4 +16,15 @@ class ExperimentApplication {
   String toString() {
     return 'ExperimentApplication{name: $name}';
   }
+
+  ExperimentApplication.fromMap(Map<String, dynamic> data){
+    name = data["name"];
+  }
+
+  Map<String, dynamic> toMap(){
+    return {
+      "name" : name,
+    };
+  }
+
 }

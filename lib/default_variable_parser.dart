@@ -7,25 +7,15 @@ import 'context.dart';
 
 class DefaultVariableParser implements VariableParser {
 
-
-  DefaultVariableParser() {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.enable(MapperFeature.USE_STATIC_TYPING);
-    reader_ = objectMapper
-        .readerFor(TypeFactory.defaultInstance().constructMapType(
-        HashMap.class, String.class, Object.class));
-  }
-
   @override
   Map<String, dynamic>? parse(Context context, String experimentName,
       String variantName, final String config) {
     try {
-      return reader_.readValue(config);
+      var rawData = jsonDecode(config);
+      return rawData;
     } on IOException catch (e) {
       print(e);
       return null;
     }
   }
-
-  late ObjectReader reader_;
 }

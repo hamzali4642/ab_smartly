@@ -3,9 +3,9 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 
 class GoalAchievement {
-  String name;
-  int achievedAt;
-  Map<String, dynamic> properties;
+  late String name;
+  late int achievedAt;
+  late Map<String, dynamic> properties;
 
   GoalAchievement({required this.name, required this.achievedAt, required this.properties});
 
@@ -23,5 +23,20 @@ class GoalAchievement {
   @override
   String toString() {
     return 'GoalAchievement{name: $name, achievedAt: $achievedAt, properties: $properties}';
+  }
+
+
+  GoalAchievement.fromMap(Map<String, dynamic> data){
+    name = data["name"];
+    achievedAt = data["achievedAt"];
+    properties = data["properties"];
+  }
+
+  Map<String, dynamic> toMap(){
+    return {
+      "name" : name,
+      "achievedAt" : achievedAt,
+      "properties" : properties,
+    };
   }
 }

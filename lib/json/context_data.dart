@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'experiment.dart';
 
 class ContextData {
-  List<Experiment> experiments;
+  late List<Experiment> experiments;
 
   ContextData({this.experiments = const []});
 
@@ -22,4 +22,17 @@ class ContextData {
   String toString() {
     return "ContextData{experiments=$experiments}";
   }
+
+  ContextData.fromMap(Map<String, dynamic> data){
+    List experiments = data["experiments"] ?? [];
+    this.experiments = List.generate(experiments.length, (index) => Experiment.fromMap(experiments[index]));
+  }
+
+  Map<String, dynamic> toMap(){
+    List experiments =  List.generate(this.experiments.length, (index) => this.experiments[index].toMap());
+    return{
+      "experiments" : experiments,
+    };
+  }
+  
 }
