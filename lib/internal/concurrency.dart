@@ -3,22 +3,21 @@ import 'package:ab_smartly/helper/mutex/mutex.dart';
 import 'package:ab_smartly/helper/mutex/read_write_mutex.dart';
 
 class Concurrency {
-  static V computeIfAbsentRW<K, V>(ReadWriteMutex lock, Map<K, V> map, K key, V computer(K key)) {
+  static Future<V> computeIfAbsentRW<K, V>(ReadWriteMutex lock, Map<K, V> map, K key, V computer(K key)) async {
 
-    final ReentrantReadWriteLock.ReadLock readLock = lock.readLock;
     try {
-      readLock.lock();
+
+
+      lock.acquireRead();
       final V value = map[key] as V;
       if (value != null) {
         return value;
       }
     } finally {
-      readLock.unlock();
+      lock.release();
     }
-
-    final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock;
     try {
-      writeLock.lock();
+      lock.acquireWrite();
       final V value = map[key] as V; // double check
       if (value != null) {
         return value;
@@ -28,37 +27,36 @@ class Concurrency {
       map[key] = newValue;
       return newValue;
     } finally {
-      writeLock.unlock();
+      lock.release();
     }
   }
 
-  static V getRW<K, V>(ReentrantReadWriteLock lock, Map<K, V> map, K key) {
-    final ReentrantReadWriteLock.ReadLock readLock = lock.readLock;
+  static V getRW<K, V>(ReadWriteMutex lock, Map<K, V> map, K key) {
     try {
-      readLock.lock();
+      lock.acquireRead();
+
       return map[key] as V;
     } finally {
-      readLock.unlock();
+      lock.release();
     }
   }
 
-  static V putRW<K, V>(ReentrantReadWriteLock lock, Map<K, V> map, K key, V value) {
-    final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock;
+  static V putRW<K, V>(ReadWriteMutex lock, Map<K, V> map, K key, V value) {
     try {
-      writeLock.lock();
+      lock.acquireWrite();
+
       return map[key] = value;
     } finally {
-      writeLock.unlock();
+      lock.release();
     }
   }
 
-  static void addRW<V>(ReentrantReadWriteLock lock, List<V> list, V value) {
-    final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock;
+  static void addRW<V>(ReadWriteMutex lock, List<V> list, V value) {
     try {
-      writeLock.lock();
+      lock.acquireWrite();
       list.add(value);
     } finally {
-      writeLock.unlock();
+      lock.release();
     }
   }
 }

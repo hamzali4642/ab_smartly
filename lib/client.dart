@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:ab_smartly/default_http_client.dart';
 import 'client_config.dart';
@@ -45,9 +46,9 @@ class Client implements Closeable {
 
     url_ = "$endpoint/context";
     httpClient_ = httpClient;
-    deserializer_ = config.contextDataDeserializer;
-    serializer_ = config.contextEventSerializer;
-    executor_ = config.executor;
+    deserializer_ = config.deserializer_;
+    serializer_ = config.serializer_;
+    executor_ = config.executor_;
 
     deserializer_ ??= DefaultContextDataDeserializer();
 
@@ -67,34 +68,36 @@ class Client implements Closeable {
     };
   }
 
-  Future<ContextData?> getContextData() {
-    final CompletableFuture<ContextData> dataFuture =
-        CompletableFuture<ContextData>();
+  Future<ContextData> getContextData() {
+
+    Completer<ContextData> dataFuture = Completer<ContextData>();
     final Executor executor =
         executor_ ?? dataFuture.defaultExecutor();
 
+
     CompletableFuture.runAsync(() {
 
+
       httpClient_.get(url_, query_, null).then((response) {
-        final int code = response.statusCode;
+        final int code = response.getStatusCode();
         if ((code / 100) == 2) {
 
-          final Uint8List content = response.content;
+          final Uint8List content = Uint8List.fromList(response.getContent());
           dataFuture.complete(
-              deserializer_.deserialize(response.content, 0, content.length));
+              deserializer_!.deserialize(Uint8List.fromList(response.getContent()), 0, content.length));
         } else {
-          dataFuture.completeError(Exception(response.statusMessage));
+          dataFuture.completeError(Exception(response.getStatusMessage()));
         }
       }).catchError((exception) {
         dataFuture.completeError(exception);
       });
     }, executor);
 
-    return dataFuture;
+    return dataFuture.future;
   }
 
   Future<void> publish(final PublishEvent event) {
-    final CompletableFuture<void> publishFuture = CompletableFuture<void>();
+    Completer<void> publishFuture = Completer<void>();
     final Executor executor =
         executor_ ?? publishFuture.defaultExecutor();
 

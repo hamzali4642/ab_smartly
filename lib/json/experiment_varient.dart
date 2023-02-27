@@ -2,7 +2,7 @@ import 'dart:ui';
 
 class ExperimentVariant {
   late String name;
-  late String config;
+  String? config;
 
   ExperimentVariant({required this.name, required this.config});
 

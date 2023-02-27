@@ -6,6 +6,7 @@ import 'package:ab_smartly/variable_parser.dart';
 
 import 'ab_smartly_config.dart';
 import 'audience_deserializer.dart';
+import 'audience_matcher.dart';
 import 'context.dart';
 import 'context_config.dart';
 import 'context_data_provider.dart';
@@ -18,6 +19,7 @@ import 'default_variable_parser.dart';
 import 'java/time/clock.dart';
 import 'java_system_classes/closeable.dart';
 import 'client.dart';
+import 'json/context_data.dart';
 
 class ABSmartly implements Closeable {
   ABSmartly(ABSmartlyConfig config) {
@@ -65,7 +67,7 @@ class ABSmartly implements Closeable {
   }
 
   @override
-  void close() {
+  Future<void> close() async {
     if (client_ != null) {
       client_!.close();
       client_ = null;
@@ -73,10 +75,11 @@ class ABSmartly implements Closeable {
 
     if (scheduler_ != null) {
       try {
-        scheduler_.awaitTermination(5000, TimeUnit.MILLISECONDS);
+
+        await Future.delayed(Duration(milliseconds: 5000));
+        // scheduler_.awaitTermination(5000, TimeUnit.MILLISECONDS);
       }
-    catch
-    (Exception e) {}
+    catch(e) {}
     scheduler_ = null;
     }
     client_?.close();
@@ -91,7 +94,7 @@ class ABSmartly implements Closeable {
 
   //late ScheduledExecutorService scheduler_;
 
-  late Timer scheduler_;
+  Timer? scheduler_;
 
   void scheduleTask() {
     scheduler_ = Timer(const Duration(seconds: 5), () {});

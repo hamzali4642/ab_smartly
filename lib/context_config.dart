@@ -57,25 +57,21 @@ class ContextConfig {
   Map<String, int> getOverrides() => overrides_;
 
   ContextConfig setCustomAssignment(String experimentName, int variant) {
-    if (cassigmnents_ == null) {
-      cassigmnents_ = new HashMap<String, int>();
-    }
-    cassigmnents_[experimentName] = variant;
+    cassigmnents_ ??= <String, int>{};
+    cassigmnents_![experimentName] = variant;
     return this;
   }
 
   ContextConfig setCustomAssignments(Map<String, int> customAssignments) {
-    if (cassigmnents_ == null) {
-      cassigmnents_ = {};
-    }
-    cassigmnents_.addAll(customAssignments);
+    cassigmnents_ ??= {};
+    cassigmnents_!.addAll(customAssignments);
     return this;
   }
 
   dynamic getCustomAssignment(String experimentName) =>
-      cassigmnents_[experimentName];
+      cassigmnents_?[experimentName];
 
-  Map<String, int> getCustomAssignments() => cassigmnents_;
+  Map<String, int>? getCustomAssignments() => cassigmnents_;
 
   ContextEventLogger getEventLogger() => eventLogger_;
 
@@ -101,7 +97,7 @@ class ContextConfig {
   late Map<String, String> units_;
   late Map<String, dynamic> attributes_;
   late Map<String, int> overrides_;
-  late Map<String, int> cassigmnents_;
+  late Map<String, int>? cassigmnents_;
   late ContextEventLogger eventLogger_;
   int publishDelay = 100;
   int refreshInterval = 0;
