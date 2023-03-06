@@ -6,7 +6,6 @@ class DefaultHTTPClient implements HTTPClient{
 
   static DefaultHTTPClient create(final DefaultHTTPClientConfig config) {
     return DefaultHTTPClient(config);
-
   }
 
 

@@ -1,20 +1,19 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:core';
-import 'dart:js';
 import 'dart:typed_data';
 
 import 'package:ab_smartly/helper/mutex/mutex.dart';
 import 'package:ab_smartly/variable_parser.dart';
 import 'audience_matcher.dart';
 
-import 'audience_matcher.dart';
 import 'context_config.dart';
 import 'context_data_provider.dart';
 import 'context_event_handler.dart';
 import 'context_event_logger.dart';
-import 'context_event_logger.dart';
-import 'context_event_logger.dart';
 import 'helper/mutex/read_write_mutex.dart';
 import 'internal/concurrency.dart';
+import 'internal/hashing/hashing.dart';
 import 'internal/variant_assigner.dart';
 import 'java/time/clock.dart';
 import 'java_system_classes/closeable.dart';
@@ -24,27 +23,29 @@ import 'json/experiment.dart';
 import 'json/experiment_varient.dart';
 import 'json/exposure.dart';
 import 'json/goal_achievement.dart';
+import 'json/publish_event.dart';
+import 'json/unit.dart';
 
 class Context implements Closeable {
+  bool dataFutureCheck = false;
 
-
-
-  Context(Clock clock, ContextConfig config, ScheduledExecutorService scheduler,
-      CompletableFuture<ContextData> dataFuture,
+  Context(
+      Clock clock,
+      ContextConfig config,
+      Future<ContextData> dataFuture,
       ContextDataProvider dataProvider,
-      ContextEventHandler eventHandler, ContextEventLogger eventLogger,
+      ContextEventHandler eventHandler,
+      ContextEventLogger eventLogger,
       VariableParser variableParser,
       AudienceMatcher audienceMatcher) {
     clock_ = clock;
     publishDelay_ = config.getPublishDelay();
     refreshInterval_ = config.getRefreshInterval();
     eventHandler_ = eventHandler;
-    eventLogger_ =
-        config.getEventLogger() ?? eventLogger;
+    eventLogger_ = config.getEventLogger() ?? eventLogger;
     dataProvider_ = dataProvider;
     variableParser_ = variableParser;
     audienceMatcher_ = audienceMatcher;
-    scheduler_ = scheduler;
 
     units_ = <String, String>{};
 
@@ -67,51 +68,40 @@ class Context implements Closeable {
     final Map<String, int>? cassignments = config.getCustomAssignments();
     cassignments_ = <String, int>{};
 
-    if (dataFuture.isDone()) {
-      dataFuture.thenAccept(Consumer<ContextData>() {
-      @Override
-      public void accept(ContextData data) {
-      Context.this.setData(data);
-      Context.this.logEvent(EventType.Ready, data);
-      }
-      }).exceptionally(Function<Throwable, Void>() {
-          @Override
-          public Void apply(Throwable exception)
-      {
-        Context
-    .
-    this.setDataFailed(exception);
-    Context.this.logError(exception);
-    return null;
-    }
+    dataFuture.whenComplete(() {
+      dataFutureCheck = true;
     });
+
+    if (dataFutureCheck) {
+      dataFuture.then((data) {
+        setData(data);
+        logEvent(EventType.Ready, data);
+      }).catchError((exception) {
+        setDataFailed(exception);
+        logError(exception);
+      });
     } else {
-    readyFuture_ = CompletableFuture<Void>();
-    dataFuture.thenAccept(Consumer<ContextData>() {
-    @Override
-    public void accept(ContextData data) {
-    Context.this.setData(data);
-    readyFuture_.complete(null);
-    readyFuture_ = null;
+      readyFuture_ = Completer<Future<void>>();
 
-    Context.this.logEvent(EventType.Ready, data);
+      dataFuture.then((data) {
+        setData(data);
 
-    if (Context.this.getPendingCount() > 0) {
-    Context.this.setTimeout();
-    }
-    }
-    }).exceptionally(Function<Throwable, Void>() {
-    @Override
-    public Void apply(Throwable exception) {
-    Context.this.setDataFailed(exception);
-    readyFuture_.complete(null);
-    readyFuture_ = null;
+        readyFuture_!.complete(null);
+        readyFuture_ = null;
 
-    Context.this.logError(exception);
+        logEvent(EventType.Ready, data);
 
-    return null;
-    }
-    });
+        if (getPendingCount() > 0) {
+          setTimeout();
+        }
+      }).catchError((exception) {
+        setDataFailed(exception);
+        readyFuture_!.complete(null);
+        readyFuture_ = null;
+        logError(exception);
+
+        return null;
+      });
     }
   }
 
@@ -120,7 +110,7 @@ class Context implements Closeable {
   }
 
   bool isFailed() {
-    return failed_;
+    return failed_ ?? false;
   }
 
   bool isClosed() {
@@ -131,37 +121,22 @@ class Context implements Closeable {
     return !closed_ && closing_;
   }
 
-  public CompletableFuture
-
-  <
-
-  Context
-
-  >
-
-  waitUntilReadyAsync() {
+  Future<Context> waitUntilReadyAsync() {
     if (data_ != null) {
-      return CompletableFuture.completedFuture(this);
+      return Future.value(this);
     } else {
-      return readyFuture_.thenApply(Function<Void, Context>() {
-          @Override
-          public Context apply(Void k)
-      {
-        return Context
-    .
-    this;
-  }
-  }
-    );
-  }
+      return readyFuture_!.future.then((value) {
+        return Future.value(this);
+      });
+    }
   }
 
-  Context waitUntilReady() {
+  Future<Context> waitUntilReady() async {
     if (data_ == null) {
-      final CompletableFuture<
-          Void> future = readyFuture_; // cache here to avoid locking
-      if (future != null && !future.isDone()) {
-        future.join();
+      final Future<void>? future =
+          readyFuture_?.future; // cache here to avoid locking
+      if (future != null) {
+        await future;
       }
     }
     return this;
@@ -172,7 +147,8 @@ class Context implements Closeable {
 
     try {
       dataLock_.acquireRead();
-      final List<String> experimentNames = List.generate(data_!.experiments.length, (index) => data_!.experiments[index].name);
+      final List<String> experimentNames = List.generate(
+          data_!.experiments.length, (index) => data_!.experiments[index].name);
 
       return experimentNames;
     } finally {
@@ -185,7 +161,7 @@ class Context implements Closeable {
 
     try {
       dataLock_.acquireRead();
-      return data_;
+      return data_!;
     } finally {
       dataLock_.release();
     }
@@ -221,10 +197,10 @@ class Context implements Closeable {
     });
   }
 
-  String getUnit(final String unitType) {
+  String? getUnit(final String unitType) {
     try {
       contextLock_.acquireRead();
-      return units_[unitType];
+      return units_![unitType];
     } finally {
       contextLock_.release();
     }
@@ -236,20 +212,17 @@ class Context implements Closeable {
     try {
       contextLock_.acquireWrite();
 
-
-      final String previous = units_.get(unitType);
-      if ((previous != null) && !previous.equals(uid)) {
-        throw IllegalArgumentException(
-            String.format("Unit '%s' already set.", unitType));
+      final String? previous = units_![unitType];
+      if ((previous != null) && !(previous == uid)) {
+        throw Exception("Unit $unitType already set.");
       }
 
       final String trimmed = uid.trim();
-      if (trimmed.isEmpty()) {
-        throw IllegalArgumentException(
-            String.format("Unit '%s' UID must not be blank.", unitType));
+      if (trimmed.isEmpty) {
+        throw Exception("Unit $unitType UID must not be blank.");
       }
 
-      units_[unitType] = trimmed;
+      units_![unitType] = trimmed;
     } finally {
       contextLock_.release();
     }
@@ -272,9 +245,8 @@ class Context implements Closeable {
   }
 
   dynamic getAttribute(final String name) {
-    final ReentrantReadWriteLock.ReadLock readLock = contextLock_.readLock();
     try {
-      readLock.lock();
+      contextLock_.acquireRead();
       for (int i = attributes_.length; i-- > 0;) {
         final Attribute attr = attributes_[i];
         if (name == attr.name) {
@@ -284,30 +256,28 @@ class Context implements Closeable {
 
       return null;
     } finally {
-      readLock.unlock();
+      contextLock_.release();
     }
   }
 
   void setAttribute(String name, dynamic value) {
     checkNotClosed();
 
-
-    Concurrency.addRW(
-        contextLock_, attributes_,
+    Concurrency.addRW(contextLock_, attributes_,
         Attribute(name: name, value: value, setAt: clock_.millis()));
   }
 
   Map<String, dynamic> getAttributes() {
-    final Map<String, dynamic> result = Map<String, dynamic>();
-    final ReentrantReadWriteLock.ReadLock readLock = contextLock_.readLock();
+    final Map<String, dynamic> result = <String, dynamic>{};
+
     try {
-      readLock.lock();
+      contextLock_.acquireRead();
       for (final Attribute attr in attributes_) {
         result[attr.name] = attr.value;
       }
       return result;
     } finally {
-      readLock.unlock();
+      contextLock_.release();
     }
   }
 
@@ -317,11 +287,11 @@ class Context implements Closeable {
     });
   }
 
-  int getTreatment(final String experimentName) {
+  Future<int> getTreatment(final String experimentName) async {
     checkReady(true);
 
-    final Assignment assignment = getAssignment(experimentName);
-    if (!assignment.exposed.get()) {
+    final Assignment assignment = await getAssignment(experimentName);
+    if (!assignment.exposed) {
       queueExposure(assignment);
     }
 
@@ -329,8 +299,10 @@ class Context implements Closeable {
   }
 
   void queueExposure(final Assignment assignment) {
-    if (assignment.exposed.compareAndSet(false, true)) {
-      final Exposure exposure = Exposure(id: assignment.id,
+    if (!assignment.exposed) {
+      assignment.exposed = true;
+      final Exposure exposure = Exposure(
+          id: assignment.id,
           name: assignment.name,
           unit: assignment.unitType,
           variant: assignment.variant,
@@ -343,11 +315,11 @@ class Context implements Closeable {
           audienceMismatch: assignment.audienceMismatch);
 
       try {
-        eventLock_.lock();
-        pendingCount_.incrementAndGet();
+        eventLock_.acquire();
+        pendingCount_++;
         exposures_.add(exposure);
       } finally {
-        eventLock_.unlock();
+        eventLock_.release();
       }
 
       logEvent(EventType.Exposure, exposure);
@@ -356,10 +328,10 @@ class Context implements Closeable {
     }
   }
 
-  int peekTreatment(final String experimentName) {
+  Future<int> peekTreatment(final String experimentName) async {
     checkReady(true);
 
-    return getAssignment(experimentName).variant;
+    return (await getAssignment(experimentName)).variant;
   }
 
   Map<String, List<String>> getVariableKeys() {
@@ -368,66 +340,64 @@ class Context implements Closeable {
     final Map<String, List<String>> variableKeys = <String, List<String>>{};
 
     try {
-      dataLock_.readLock().lock();
+      dataLock_.acquireRead();
 
-      for (Map.Entry<String,
-          List<ExperimentVariables>> entry : indexVariables_.entrySet()) {
-    final String key = entry.getKey();
-    final List<ExperimentVariables> keyExperimentVariables = entry.getValue();
-    final List<String> values = ArrayList<String>(keyExperimentVariables.size());
-
-    for (final ExperimentVariables experimentVariables : keyExperimentVariables) {
-    values.add(experimentVariables.data.name);
-    }
-    variableKeys.put(key, values);
-    }
+      // in
+      indexVariables_!.forEach((key, value) {
+        final List<ExperimentVariables> keyExperimentVariables = value;
+        final List<String> values = List.generate(keyExperimentVariables.length,
+            (index) => keyExperimentVariables[index].data.name);
+        variableKeys[key] = values;
+      });
     } finally {
-    dataLock_.readLock().unlock();
+      dataLock_.release();
     }
-    return
-    variableKeys;
+    return variableKeys;
   }
 
-  dynamic getVariableValue(final String key, final dynamic defaultValue) {
+  dynamic getVariableValue(final String key, final dynamic defaultValue) async {
     checkReady(true);
 
-    final Assignment assignment = getVariableAssignment(key);
+    final Assignment? assignment = await getVariableAssignment(key);
     if (assignment != null) {
       if (assignment.variables != null) {
-        if (!assignment.exposed.get()) {
+        if (!assignment.exposed) {
           queueExposure(assignment);
         }
-
-        if (assignment.variables.containsKey(key)) {
-          return assignment.variables.get(key);
+        if (assignment.variables!.containsKey(key)) {
+          return assignment.variables![key];
         }
       }
     }
     return defaultValue;
   }
 
-  Object peekVariableValue(final String key, final Object defaultValue) {
+  Future<dynamic> peekVariableValue(
+      final String key, final dynamic defaultValue) async {
     checkReady(true);
 
-    final Assignment assignment = getVariableAssignment(key);
+    final Assignment? assignment = await getVariableAssignment(key);
     if (assignment != null) {
       if (assignment.variables != null) {
-        if (assignment.variables.containsKey(key)) {
-          return assignment.variables.get(key);
+        if (assignment.variables!.containsKey(key)) {
+          return assignment.variables![key];
         }
       }
     }
     return defaultValue;
   }
 
-  void track(final String goalName, final Map<String, dynamic> properties) {
+  void track(final String goalName, final Map<String, dynamic>? properties) {
     checkNotClosed();
 
-    final GoalAchievement achievement = GoalAchievement(name: goalName, achievedAt: clock_.millis(), properties: {},);
+    final GoalAchievement achievement = GoalAchievement(
+      name: goalName,
+      achievedAt: clock_.millis(),
+      properties: {},
+    );
     achievement.achievedAt = clock_.millis();
     achievement.name = goalName;
-    achievement.properties =
-    (properties == null) ? null : TreeMap<String, Object>(properties);
+    achievement.properties = properties;
 
     try {
       eventLock_.acquire();
@@ -442,403 +412,331 @@ class Context implements Closeable {
     setTimeout();
   }
 
-  public CompletableFuture
-
-  <
-
-  Void
-
-  >
-
-  publishAsync() {
+  Future<void> publishAsync() {
     checkNotClosed();
 
     return flush();
   }
 
-  public
-
-  void publish() {
-    publishAsync().join();
+  Future<void> publish() async {
+    await publishAsync();
   }
 
   int getPendingCount() {
     return pendingCount_;
   }
 
-  public CompletableFuture
-
-  <
-
-  Void
-
-  >
-
-  refreshAsync() {
+  Future<void> refreshAsync() {
     checkNotClosed();
 
-    if (refreshing_.compareAndSet(false, true)) {
-      refreshFuture_ = CompletableFuture<Void>();
+    if (!refreshing_) {
+      refreshing_ = true;
+      refreshFuture_ = Completer<Future<void>>();
 
-      dataProvider_.getContextData().thenAccept(Consumer<ContextData>() {
-      @Override
-      public void accept(ContextData data) {
-      Context.this.setData(data);
-      refreshing_.set(false);
-      refreshFuture_.complete(null);
+      dataProvider_!.getContextData().then((data) {
+        setData(data!);
+        refreshing_ = false;
 
-      Context.this.logEvent(EventType.Refresh, data);
-      }
-      }).exceptionally(Function<Throwable, Void>() {
-          @Override
-          public Void apply(Throwable exception)
-      {
-        refreshing_.set(false);
-        refreshFuture_.completeExceptionally(exception);
-
-        Context
-    .
-    this.logError(exception);
-    return null;
-    }
-    });
+        refreshFuture_!.complete(null);
+        logEvent(EventType.Refresh, data);
+      }).catchError((error) {
+        refreshing_ = false;
+        refreshFuture_!.completeError(error);
+        logError(error);
+        return null;
+      });
     }
 
-    final CompletableFuture<Void> future = refreshFuture_;
+    final Future<void>? future = refreshFuture_?.future;
     if (future != null) {
-    return future;
+      return future;
     }
 
-    return
-    CompletableFuture
-    .
-    completedFuture
-    (
-    null
-    );
+    return Future.value(null);
   }
 
-  public
-
-  void refresh() {
-    refreshAsync().join();
+  Future<void> refresh() async {
+    await refreshAsync();
   }
 
-  public CompletableFuture
-
-  <
-
-  Void
-
-  >
-
-  closeAsync() {
-    if (!closed_.get()) {
-      if (closing_.compareAndSet(false, true)) {
+  Future<void> closeAsync() {
+    if (!closed_) {
+      if (closing_ == false) {
+        closing_ = true;
         clearRefreshTimer();
 
-        if (pendingCount_.get() > 0) {
-          closingFuture_ = CompletableFuture<Void>();
+        if (pendingCount_ > 0) {
+          closingFuture_ = Completer<Future<void>>();
 
-          flush().thenAccept(Consumer<Void>() {
-          @Override
-          public void accept(Void x) {
-          closed_.set(true);
-          closing_.set(false);
-          closingFuture_.complete(null);
-
-          Context.this.logEvent(EventType.Close, null);
-          }
-          }).exceptionally(Function<Throwable, Void>() {
-              @Override
-              public Void apply(Throwable exception)
-          {
-            closed_.set(true);
-            closing_.set(false);
-            closingFuture_.completeExceptionally(exception);
+          flush().then((x) {
+            closed_ = true;
+            closing_ = false;
+            closingFuture_!.complete(null);
+            logEvent(EventType.Close, null);
+          }).catchError((exception) {
+            closed_ = true;
+            closing_ = false;
+            closingFuture_!.completeError(exception);
             // event logger gets this error during publish
-
             return null;
-          }
-        });
+          });
 
-    return closingFuture_;
-    } else {
-    closed_.set(true);
-    closing_.set(false);
+          return closingFuture_!.future;
+        } else {
+          closed_ = true;
+          closing_ = false;
+          logEvent(EventType.Close, null);
+        }
+      }
 
-    Context.this.logEvent(EventType.Close, null);
-    }
-    }
-
-    final CompletableFuture<Void> future = closingFuture_;
-    if (future != null) {
-    return future;
-    }
+      final Future<void>? future = closingFuture_?.future;
+      if (future != null) {
+        return future;
+      }
     }
 
-    return CompletableFuture.completedFuture(null);
-    }
-
-  @override
-  void close() {
-    closeAsync().join();
+    return Future.value(null);
   }
 
-  CompletableFuture<Void> flush() {
+  @override
+  Future<void> close() async {
+    await closeAsync();
+  }
+
+  Future<void> flush() {
     clearTimeout();
 
-    if (!failed_) {
-      if (pendingCount_.get() > 0) {
+    if (!failed_!) {
+      if (pendingCount_ > 0) {
         List<Exposure>? exposures;
         List<GoalAchievement>? achievements;
         int eventCount;
 
         try {
-          eventLock_.lock();
-          eventCount = pendingCount_.get();
+          eventLock_.acquire();
+          eventCount = pendingCount_;
 
           if (eventCount > 0) {
-            if (!exposures_.isEmpty()) {
-              exposures = exposures_.toArray(Exposure[0]);
+            if (exposures_.isNotEmpty) {
+              exposures = exposures_.toList();
               exposures_.clear();
             }
 
-            if (!achievements_.isEmpty()) {
-              achievements = achievements_.toArray(GoalAchievement[0]);
+            if (achievements_.isNotEmpty) {
+              achievements = achievements_.toList();
               achievements_.clear();
             }
 
-            pendingCount_.set(0);
+            pendingCount_ = 0;
           }
         } finally {
-          eventLock_.unlock();
+          eventLock_.release();
         }
 
         if (eventCount > 0) {
-          final PublishEvent event = PublishEvent();
+          List<Unit> units = [];
+          units_!.forEach((key, value) async {
+            units.add(Unit(
+                type: key, uid: utf8.decode(await getUnitHash(key, value))));
+          });
+
+          final PublishEvent event = PublishEvent(
+            hashed: true,
+            units: units,
+            publishedAt: clock_.millis(),
+            exposures: exposures!,
+            goals: achievements!,
+            attributes: attributes_.isEmpty ? null : attributes_.toList(),
+          );
           event.hashed = true;
           event.publishedAt = clock_.millis();
-          event.units = Algorithm.mapSetToArray(units_.entrySet(), Unit[0],
-              Function<Map.Entry<String, String>, Unit>() {
-              @Override
-              public Unit apply(Map.Entry<String, String> entry) {
-              return new Unit(entry.getKey(),
-              new String(getUnitHash(entry.getKey(), entry.getValue()),
-              StandardCharsets.US_ASCII));
-              }
-              });
-          event.attributes =
-          attributes_.isEmpty() ? null : attributes_.toArray(Attribute[0]);
-          event.exposures = exposures;
-          event.goals = achievements;
 
-          final CompletableFuture<Void> result = CompletableFuture<Void>();
+          final Completer<Future<void>> result = Completer<Future<void>>();
 
-          eventHandler_.publish(this, event).thenRunAsync(Runnable() {
-          @Override
-          public void run() {
-          Context.this.logEvent(EventType.Publish, event);
-          result.complete(null);
-          }
-          }).exceptionally(Function<Throwable, Void>() {
-              @Override
-              public Void apply(Throwable throwable)
-          {
-            Context
-    .
-    this.logError(throwable);
+          eventHandler_!.publish(this, event).then((value) {
+            logEvent(EventType.Publish, event);
+            result.complete(null);
+          }).catchError((error) {
+            logError(error);
+            result.completeError(error);
+          });
 
-    result.completeExceptionally(throwable);
-    return null;
-    }
-    });
-
-    return result;
-    }
-    }
+          return result.future;
+        }
+      }
     } else {
-    try {
-    eventLock_.lock();
-    exposures_.clear();
-    achievements_.clear();
-    pendingCount_.set(0);
-    } finally {
-    eventLock_.unlock();
-    }
+      try {
+        eventLock_.acquire();
+        exposures_.clear();
+        achievements_.clear();
+        pendingCount_ = 0;
+      } finally {
+        eventLock_.release();
+      }
     }
 
-    return
-    CompletableFuture
-    .
-    completedFuture
-    (
-    null
-    );
+    return Future.value(null);
   }
 
   void checkNotClosed() {
-    if (closed_.get()) {
-      throw IllegalStateException("ABSmartly Context is closed");
-    } else if (closing_.get()) {
-      throw IllegalStateException("ABSmartly Context is closing");
+    if (closed_) {
+      throw Exception("ABSmartly Context is closed");
+    } else if (closing_) {
+      throw Exception("ABSmartly Context is closing");
     }
   }
 
   void checkReady(final bool expectNotClosed) {
     if (!isReady()) {
-      throw IllegalStateException("ABSmartly Context is not yet ready");
+      throw Exception("ABSmartly Context is not yet ready");
     } else if (expectNotClosed) {
       checkNotClosed();
     }
   }
 
-  bool experimentMatches(final Experiment experiment,
-      final Assignment assignment) {
+  bool experimentMatches(
+      final Experiment experiment, final Assignment assignment) {
     return experiment.id == assignment.id &&
         experiment.unitType == assignment.unitType &&
         experiment.iteration == assignment.iteration &&
         experiment.fullOnVariant == assignment.fullOnVariant &&
-        Arrays.equals(experiment.trafficSplit, assignment.trafficSplit);
+        areListsEqual(experiment.trafficSplit, assignment.trafficSplit);
+    // Arrays.equals(experiment.trafficSplit, assignment.trafficSplit);
   }
 
-
-
-
-  Assignment getAssignment(final String experimentName) {
+  Future<Assignment> getAssignment(final String experimentName) async {
     try {
       contextLock_.acquireRead();
 
-
-      final Assignment assignment = assignmentCache_[experimentName]!;
+      final Assignment? assignment = assignmentCache_[experimentName];
 
       if (assignment != null) {
-        final int custom = cassignments_[experimentName]!;
-        final int override = overrides_[experimentName]!;
-        final ExperimentVariables experiment = Context
-    .this.getExperiment(experimentName);
+        final int? custom = cassignments_[experimentName];
+        final int? override = overrides_[experimentName];
+        final ExperimentVariables? experiment = getExperiment(experimentName);
 
-    if (override != null) {
-    if (assignment.overridden && assignment.variant == override) {
-    // override up-to-date
-    return assignment;
-    }
-    } else if (experiment == null) {
-    if (!assignment.assigned) {
-    // previously not-running experiment
-    return assignment;
-    }
-    } else if ((custom == null) || custom == assignment.variant) {
-    if (experimentMatches(experiment.data, assignment)) {
-    // assignment up-to-date
-    return assignment;
-    }
-    }
-    }
+        if (override != null) {
+          if (assignment.overridden && assignment.variant == override) {
+            // override up-to-date
+            return assignment;
+          }
+        } else if (experiment == null) {
+          if (!assignment.assigned) {
+            // previously not-running experiment
+            return assignment;
+          }
+        } else if ((custom == null) || custom == assignment.variant) {
+          if (experimentMatches(experiment.data, assignment)) {
+            // assignment up-to-date
+            return assignment;
+          }
+        }
+      }
     } finally {
-    contextLock_.release();
+      contextLock_.release();
     }
 
     // cache miss or out-dated
-    final ReentrantReadWriteLock.WriteLock writeLock = contextLock_.writeLock();
     try {
-    writeLock.lock();
+      contextLock_.acquireWrite();
 
-    final int custom = cassignments_[experimentName]!;
-    final int override = overrides_[experimentName]!;
-    final ExperimentVariables experiment = Context.this.getExperiment(experimentName);
+      final int? custom = cassignments_[experimentName];
+      final int? override = overrides_[experimentName];
+      final ExperimentVariables? experiment = getExperiment(experimentName);
 
-    final Assignment assignment = Assignment();
-    assignment.name = experimentName;
-    assignment.eligible = true;
+      final Assignment assignment = Assignment();
+      assignment.name = experimentName;
+      assignment.eligible = true;
 
-    if (override != null) {
-    if (experiment != null) {
-    assignment.id = experiment.data.id;
-    assignment.unitType = experiment.data.unitType;
-    }
+      if (override != null) {
+        if (experiment != null) {
+          assignment.id = experiment.data.id;
+          assignment.unitType = experiment.data.unitType;
+        }
 
-    assignment.overridden = true;
-    assignment.variant = override;
-    } else {
-    if (experiment != null) {
-    final String unitType = experiment.data.unitType;
+        assignment.overridden = true;
+        assignment.variant = override;
+      } else {
+        if (experiment != null) {
+          final String unitType = experiment.data.unitType;
 
-    if (experiment.data.audience != null && experiment.data.audience.length() > 0) {
-    final Map<String, Object> attrs = HashMap<String, Object>(attributes_.size());
-    for (final Attribute attr : attributes_) {
-    attrs.put(attr.name, attr.value);
-    }
+          if (experiment.data.audience != null &&
+              experiment.data.audience.isNotEmpty) {
+            final Map<String, dynamic> attrs = <String, dynamic>{};
+            for (final Attribute attr in attributes_) {
+              attrs[attr.name] = attr.value;
+            }
 
-    final AudienceMatcher.Result match = audienceMatcher_
-        .evaluate(experiment.data.audience, attrs);
-    if (match != null) {
-    assignment.audienceMismatch = !match.get();
-    }
-    }
+            final Result? match =
+                audienceMatcher_!.evaluate(experiment.data.audience, attrs);
+            if (match != null) {
+              assignment.audienceMismatch = !match.get();
+            }
+          }
 
-    if (experiment.data.audienceStrict && assignment.audienceMismatch) {
-    assignment.variant = 0;
-    } else if (experiment.data.fullOnVariant == 0) {
-    final String uid = units_.get(experiment.data.unitType);
-    if (uid != null) {
-    final Uint8List unitHash = Context.this.getUnitHash(unitType, uid);
+          if (experiment.data.audienceStrict && assignment.audienceMismatch) {
+            assignment.variant = 0;
+          } else if (experiment.data.fullOnVariant == 0) {
+            final String? uid = units_![experiment.data.unitType];
+            if (uid != null) {
+              final Uint8List unitHash = await getUnitHash(unitType, uid);
 
-    final VariantAssigner assigner = Context.this.getVariantAssigner(unitType,
-    unitHash);
-    final bool eligible = assigner.assign(experiment.data.trafficSplit,
-    experiment.data.trafficSeedHi,
-    experiment.data.trafficSeedLo) == 1;
-    if (eligible) {
-    if (custom != null) {
-    assignment.variant = custom;
-    assignment.custom = true;
-    } else {
-    assignment.variant = assigner.assign(experiment.data.split,
-    experiment.data.seedHi,
-    experiment.data.seedLo);
-    }
-    } else {
-    assignment.eligible = false;
-    assignment.variant = 0;
-    }
-    assignment.assigned = true;
-    }
-    } else {
-    assignment.assigned = true;
-    assignment.variant = experiment.data.fullOnVariant;
-    assignment.fullOn = true;
-    }
+              final VariantAssigner assigner =
+                  await getVariantAssigner(unitType, unitHash);
+              final bool eligible = assigner.assign(
+                      experiment.data.trafficSplit,
+                      experiment.data.trafficSeedHi,
+                      experiment.data.trafficSeedLo) ==
+                  1;
+              if (eligible) {
+                if (custom != null) {
+                  assignment.variant = custom;
+                  assignment.custom = true;
+                } else {
+                  assignment.variant = assigner.assign(experiment.data.split,
+                      experiment.data.seedHi, experiment.data.seedLo);
+                }
+              } else {
+                assignment.eligible = false;
+                assignment.variant = 0;
+              }
+              assignment.assigned = true;
+            }
+          } else {
+            assignment.assigned = true;
+            assignment.variant = experiment.data.fullOnVariant;
+            assignment.fullOn = true;
+          }
 
-    assignment.unitType = unitType;
-    assignment.id = experiment.data.id;
-    assignment.iteration = experiment.data.iteration;
-    assignment.trafficSplit = experiment.data.trafficSplit;
-    assignment.fullOnVariant = experiment.data.fullOnVariant;
-    }
-    }
+          assignment.unitType = unitType;
+          assignment.id = experiment.data.id;
+          assignment.iteration = experiment.data.iteration;
+          assignment.trafficSplit = experiment.data.trafficSplit;
+          assignment.fullOnVariant = experiment.data.fullOnVariant;
+        }
+      }
 
-    if ((experiment != null) && (assignment.variant < experiment.data.variants.length)) {
-    assignment.variables = experiment.variables.get(assignment.variant);
-    }
+      if ((experiment != null) &&
+          (assignment.variant < experiment.data.variants.length)) {
+        assignment.variables = experiment.variables[assignment.variant]!;
+      }
 
-    assignmentCache_.put(experimentName, assignment);
+      assignmentCache_[experimentName] = assignment;
 
-    return assignment;
+      return assignment;
     } finally {
-    writeLock.unlock();
+      contextLock_.release();
     }
   }
 
-  Assignment getVariableAssignment(final String key) {
-    final List<
-        ExperimentVariables> keyExperimentVariables = getVariableExperiments(
-        key);
+  Future<Assignment?> getVariableAssignment(final String key) async {
+    final List<ExperimentVariables>? keyExperimentVariables =
+        getVariableExperiments(key);
 
     if (keyExperimentVariables != null) {
       for (ExperimentVariables experimentVariables in keyExperimentVariables) {
-        final Assignment assignment = getAssignment(
-            experimentVariables.data.name);
+        final Assignment assignment =
+            await getAssignment(experimentVariables.data.name);
         if (assignment.assigned || assignment.overridden) {
           return assignment;
         }
@@ -847,201 +745,178 @@ class Context implements Closeable {
     return null;
   }
 
-  ExperimentVariables getExperiment(final String experimentName) {
+  ExperimentVariables? getExperiment(final String experimentName) {
     try {
       dataLock_.acquireRead();
-      return index_[experimentName]!;
+      return index_![experimentName];
     } finally {
       dataLock_.release();
     }
   }
 
-  List<ExperimentVariables> getVariableExperiments(final String key) {
-    return Concurrency.getRW(dataLock_, indexVariables_, key);
+  List<ExperimentVariables>? getVariableExperiments(final String key) {
+    return Concurrency.getRW(dataLock_, indexVariables_!, key);
   }
 
-  byte
+  Future<Uint8List> getUnitHash(final String unitType, final String unitUID) {
+    return Concurrency.computeIfAbsentRW(contextLock_, hashedUnits_, unitType,
+        (key) {
+      return Hashing.hashUnit(unitUID);
+    });
+  }
 
-  [
-
-  ]
-
-  getUnitHash(final String unitType, final String unitUID) {
+  Future<VariantAssigner> getVariantAssigner(
+      final String unitType, final Uint8List unitHash) {
     return Concurrency.computeIfAbsentRW(
-        contextLock_, hashedUnits_, unitType, new Function < String,
-        byte[] > () {
-          @Override
-          public byte[]
-          apply(String key) {
-            return Hashing.hashUnit(unitUID);
-          }
-        });
-  }
-
-  VariantAssigner getVariantAssigner
-
-  (
-
-  final String unitType, final byte[] unitHash) {
-  return Concurrency.computeIfAbsentRW(contextLock_, assigners_, unitType,
-  Function<String, VariantAssigner>() {
-  @Override
-  public VariantAssigner apply(String key) {
-  return new VariantAssigner(unitHash);
-  }
-  });
+      contextLock_,
+      assigners_,
+      unitType,
+      (key) {
+        return VariantAssigner(unitHash);
+      },
+    );
   }
 
   void setTimeout() {
-  if (isReady()) {
-  if (timeout_ == null) {
-  try {
-  timeoutLock_.lock();
-  timeout_ ??= scheduler_.schedule(Runnable() {
-  @Override
-  public void run() {
-  Context.this.flush();
-  }
-  }, publishDelay_, TimeUnit.MILLISECONDS);
-  } finally {
-  timeoutLock_.unlock();
-  }
-  }
-  }
+    if (isReady()) {
+      if (timeout_ == null) {
+        try {
+          timeoutLock_.acquire();
+          timeout_ ??= Timer(Duration(milliseconds: publishDelay_ ?? 0), () {
+            flush();
+          });
+        } finally {
+          timeoutLock_.release();
+        }
+      }
+    }
   }
 
   void clearTimeout() {
-  if (timeout_ != null) {
-  try {
-  timeoutLock_.lock();
-  if (timeout_ != null) {
-  timeout_.cancel(false);
-  timeout_ = null;
-  }
-  } finally {
-  timeoutLock_.unlock();
-  }
-  }
+    if (timeout_ != null) {
+      try {
+        timeoutLock_.acquire();
+        if (timeout_ != null) {
+          timeout_!.cancel();
+          timeout_ = null;
+        }
+      } finally {
+        timeoutLock_.release();
+      }
+    }
   }
 
   void setRefreshTimer() {
-  if ((refreshInterval_ > 0) && (refreshTimer_ == null)) {
-  refreshTimer_ = scheduler_.scheduleWithFixedDelay(Runnable() {
-  @Override
-  public void run() {
-  Context.this.refreshAsync();
-  }
-  }, refreshInterval_, refreshInterval_, TimeUnit.MILLISECONDS);
-  }
+    if (((refreshInterval_ ?? 0) > 0) && (refreshTimer_ == null)) {
+      refreshTimer_ = Timer.periodic(
+          Duration(milliseconds: refreshInterval_ ?? 0), (timer) {
+        refreshAsync();
+      });
+    }
   }
 
   void clearRefreshTimer() {
-  if (refreshTimer_ != null) {
-  refreshTimer_.cancel(false);
-  refreshTimer_ = null;
+    if (refreshTimer_ != null) {
+      refreshTimer_!.cancel();
+      refreshTimer_ = null;
+    }
   }
-  }
-
 
   void setData(final ContextData data) {
-  final Map<String, ExperimentVariables> index = Map<String, ExperimentVariables>();
-  final Map<String, List<ExperimentVariables>> indexVariables = Map<String, List<ExperimentVariables>>();
+    final Map<String, ExperimentVariables> index =
+        <String, ExperimentVariables>{};
+    final Map<String, List<ExperimentVariables>> indexVariables =
+        <String, List<ExperimentVariables>>{};
 
-  for (Experiment experiment in data.experiments) {
-  final ExperimentVariables experimentVariables = ExperimentVariables();
-  experimentVariables.data = experiment;
-  experimentVariables.variables = List<Map<String, dynamic>>(experiment.variants.length);
+    for (Experiment experiment in data.experiments) {
+      final ExperimentVariables experimentVariables = ExperimentVariables();
+      experimentVariables.data = experiment;
+      experimentVariables.variables =
+          List.generate(experiment.variants.length, (index) {
+        for (ExperimentVariant variant in experiment.variants) {
+          if ((variant.config != null) && variant.config!.isNotEmpty) {
+            final Map<String, dynamic>? variables = variableParser_!
+                .parse(this, experiment.name, variant.name, variant.config!);
 
-  for ( ExperimentVariant variant in experiment.variants) {
-  if ((variant.config != null) && variant.config!.isNotEmpty) {
-  final Map<String, dynamic>? variables = variableParser_.parse(this, experiment.name, variant.name,
-  variant.config!);
-  for (final String key in variables.keySet()) {
-  List<ExperimentVariables> keyExperimentVariables = indexVariables.get(key);
-  if (keyExperimentVariables == null) {
-  keyExperimentVariables = <ExperimentVariables>[];
-  indexVariables.put(key, keyExperimentVariables);
-  }
+            variables?.forEach((key, value) {
+              List<ExperimentVariables>? keyExperimentVariables =
+                  indexVariables[key];
+              if (keyExperimentVariables == null) {
+                keyExperimentVariables = <ExperimentVariables>[];
+                indexVariables[key] = keyExperimentVariables;
+              }
 
-  int at = Collections.binarySearch(keyExperimentVariables, experimentVariables,
-  Comparator<ExperimentVariables>() {
-  @Override
-  public int compare(ExperimentVariables a, ExperimentVariables b) {
-  return int.valueOf(a.data.id).compareTo(b.data.id);
-  }
-  });
+              int at = keyExperimentVariables.indexOf(experimentVariables);
 
-  if (at < 0) {
-  at = -at - 1;
-  keyExperimentVariables.add (at, experimentVariables);
-  }
-  }
+              if (at < 0) {
+                at = -at - 1;
+                keyExperimentVariables.insert(at, experimentVariables);
+              }
+            });
 
-  experimentVariables.variables.add(variables);
-  } else {
-  experimentVariables.variables.add(Collections.<String, Object> emptyMap());
-  }
-  }
+            experimentVariables.variables.add(variables);
+          } else {
+            experimentVariables.variables.add(<String, dynamic>{});
+          }
+        }
+      });
 
-  index.put(experiment.name, experimentVariables);
-  }
+      index[experiment.name] = experimentVariables;
+    }
 
-  try {
-    dataLock_.acquireWrite();
+    try {
+      dataLock_.acquireWrite();
 
-  index_ = index;
-  indexVariables_ = indexVariables;
-  data_ = data;
+      index_ = index;
+      indexVariables_ = indexVariables;
+      data_ = data;
 
-  setRefreshTimer();
-  } finally {
-  dataLock_.release();
-  }
-  }
-
-  void setDataFailed(final Throwable exception) {
-  try {
-  dataLock_.acquireWrite();
-  index_ = <String, ExperimentVariables>{};
-  indexVariables_ = <String, List<ExperimentVariables>>{};
-  data_ = ContextData();
-  failed_ = true;
-  } finally {
-  dataLock_.release();
-  }
+      setRefreshTimer();
+    } finally {
+      dataLock_.release();
+    }
   }
 
-  void logEvent(EventType event, Object data) {
-  if (eventLogger_ != null) {
-  eventLogger_.handleEvent(this, event, data);
+  void setDataFailed(final Exception exception) {
+    try {
+      dataLock_.acquireWrite();
+      index_ = <String, ExperimentVariables>{};
+      indexVariables_ = <String, List<ExperimentVariables>>{};
+      data_ = ContextData();
+      failed_ = true;
+    } finally {
+      dataLock_.release();
+    }
   }
+
+  void logEvent(EventType event, dynamic data) {
+    if (eventLogger_ != null) {
+      eventLogger_!.handleEvent(this, event, data);
+    }
   }
 
   void logError(Exception error) {
-  if (eventLogger_ != null) {
-  while (error instanceof CompletionException) {
-  error = error.getCause();
-  }
-  eventLogger_.handleEvent(this, EventType.Error, error);
-  }
+    final eventLogger_ = this.eventLogger_;
+    if (eventLogger_ != null) {
+      eventLogger_.handleEvent(this, EventType.Error, error);
+    }
   }
 
   late Clock clock_;
-  int publishDelay_;
-  int refreshInterval_;
-  ContextEventHandler eventHandler_;
-  ContextEventLogger eventLogger_;
-  ContextDataProvider dataProvider_;
-  VariableParser variableParser_;
-  AudienceMatcher audienceMatcher_;
-  ScheduledExecutorService scheduler_;
-  Map<String, String> units_;
-  bool failed_;
+  int? publishDelay_;
+  int? refreshInterval_;
+  ContextEventHandler? eventHandler_;
+  ContextEventLogger? eventLogger_;
+  ContextDataProvider? dataProvider_;
+  VariableParser? variableParser_;
+  AudienceMatcher? audienceMatcher_;
+  Map<String, String>? units_;
+  bool? failed_;
 
   final ReadWriteMutex dataLock_ = ReadWriteMutex();
   ContextData? data_;
-  Map<String, ExperimentVariables> index_;
-  Map<String, List<ExperimentVariables>> indexVariables_;
+  Map<String, ExperimentVariables>? index_;
+  Map<String, List<ExperimentVariables>>? indexVariables_;
 
   final ReadWriteMutex contextLock_ = ReadWriteMutex();
 
@@ -1063,29 +938,38 @@ class Context implements Closeable {
   bool closed_ = false;
   bool refreshing_ = false;
 
-  volatile late Future<void> readyFuture_;
-  volatile late Future<void> closingFuture_;
-  volatile late Future<void> refreshFuture_;
+  Completer<void>? readyFuture_;
+  Completer<void>? closingFuture_;
+  Completer<void>? refreshFuture_;
 
   final Mutex timeoutLock_ = Mutex();
-  volatile ScheduledFuture<?> timeout_;
-  volatile
 
-  ScheduledFuture
+  Timer? timeout_;
+  Timer? refreshTimer_;
 
-  <
+  bool areListsEqual(var list1, var list2) {
+    // check if both are lists
+    if (!(list1 is List && list2 is List)
+        // check if both have same length
+        ||
+        list1.length != list2.length) {
+      return false;
+    }
 
-  ?
+    // check if elements are equal
+    for (int i = 0; i < list1.length; i++) {
+      if (list1[i] != list2[i]) {
+        return false;
+      }
+    }
 
-  >
-
-  refreshTimer_;
-
+    return true;
+  }
 }
 
 class ExperimentVariables {
   late Experiment data;
-  late List<Map<String, Object>> variables;
+  late List<Map<String, dynamic>?> variables;
 }
 
 class Assignment {
@@ -1104,7 +988,7 @@ class Assignment {
 
   late bool audienceMismatch;
 
-  Map<String, dynamic> variables = {};
+  Map<String, dynamic>? variables;
 
-  final bool exposed = false;
+  bool exposed = false;
 }

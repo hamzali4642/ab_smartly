@@ -97,6 +97,7 @@ class ABSmartly implements Closeable {
   Timer? scheduler_;
 
   void scheduleTask() {
+
     scheduler_ = Timer(const Duration(seconds: 5), () {});
   }
 }

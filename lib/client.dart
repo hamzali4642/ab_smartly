@@ -75,8 +75,9 @@ class Client implements Closeable {
         executor_ ?? dataFuture.defaultExecutor();
 
 
-    CompletableFuture.runAsync(() {
 
+
+    CompletableFuture.runAsync(() {
 
       httpClient_.get(url_, query_, null).then((response) {
         final int code = response.getStatusCode();

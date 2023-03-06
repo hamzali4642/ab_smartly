@@ -13,7 +13,7 @@ class PublishEvent {
   late int publishedAt;
   late List<Exposure> exposures;
   late List<GoalAchievement> goals;
-  late List<Attribute> attributes;
+  List<Attribute>? attributes;
 
   PublishEvent({required this.hashed, required this.units, required this.publishedAt, required this.exposures, required this.goals, required this.attributes});
 
@@ -64,7 +64,7 @@ class PublishEvent {
     List units =  List.generate(this.units.length, (index) => this.units[index].toMap());
     List exposures = List.generate(this.exposures.length, (index) => this.exposures[index].toMap());
     List goals = List.generate(this.goals.length, (index) => this.goals[index]);
-    List attributes = List.generate(this.attributes.length, (index) => this.attributes[index].toMap());
+    List attributes = List.generate(this.attributes!.length, (index) => this.attributes![index].toMap());
 
     return {
       "hashed" : hashed,

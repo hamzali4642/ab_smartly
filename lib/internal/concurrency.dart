@@ -1,13 +1,8 @@
-import 'package:ab_smartly/helper/mutex/mutex.dart';
-
 import 'package:ab_smartly/helper/mutex/read_write_mutex.dart';
 
 class Concurrency {
-  static Future<V> computeIfAbsentRW<K, V>(ReadWriteMutex lock, Map<K, V> map, K key, V computer(K key)) async {
-
+  static Future<V> computeIfAbsentRW<K, V>(ReadWriteMutex lock, Map<K, V> map, K key, V Function(K key) computer) async {
     try {
-
-
       lock.acquireRead();
       final V value = map[key] as V;
       if (value != null) {
