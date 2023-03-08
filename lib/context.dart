@@ -29,16 +29,25 @@ import 'json/unit.dart';
 class Context implements Closeable {
   bool dataFutureCheck = false;
 
+  factory Context.create( Clock clock,  final ContextConfig config,
+       final Timer scheduler,
+       final Future<ContextData> dataFuture,  final ContextDataProvider dataProvider,
+       final ContextEventHandler eventHandler, final ContextEventLogger eventLogger,
+       final VariableParser variableParser,  AudienceMatcher audienceMatcher){
+    return Context(clock, config, dataFuture, scheduler, dataProvider, eventHandler, eventLogger, variableParser, audienceMatcher);
+  }
   Context(
       Clock clock,
       ContextConfig config,
       Future<ContextData> dataFuture,
+      Timer scheduler,
       ContextDataProvider dataProvider,
       ContextEventHandler eventHandler,
       ContextEventLogger eventLogger,
       VariableParser variableParser,
       AudienceMatcher audienceMatcher) {
     clock_ = clock;
+
     publishDelay_ = config.getPublishDelay();
     refreshInterval_ = config.getRefreshInterval();
     eventHandler_ = eventHandler;
@@ -46,6 +55,7 @@ class Context implements Closeable {
     dataProvider_ = dataProvider;
     variableParser_ = variableParser;
     audienceMatcher_ = audienceMatcher;
+    scheduler_ = scheduler;
 
     units_ = <String, String>{};
 
@@ -68,9 +78,11 @@ class Context implements Closeable {
     final Map<String, int>? cassignments = config.getCustomAssignments();
     cassignments_ = <String, int>{};
 
-    dataFuture.whenComplete(() {
+
+    dataFuture.whenComplete((){
       dataFutureCheck = true;
     });
+
 
     if (dataFutureCheck) {
       dataFuture.then((data) {
@@ -946,6 +958,7 @@ class Context implements Closeable {
 
   Timer? timeout_;
   Timer? refreshTimer_;
+  late Timer scheduler_;
 
   bool areListsEqual(var list1, var list2) {
     // check if both are lists

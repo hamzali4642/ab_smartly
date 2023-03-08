@@ -51,19 +51,19 @@ class ABSmartly implements Closeable {
   }
 
    Context createContext(ContextConfig config) {
-    return Context.create(Clock.systemUTC(), config, scheduler_, contextDataProvider_.getContextData(),
-        contextDataProvider_, contextEventHandler_, contextEventLogger_, variableParser_,
-        new AudienceMatcher(audienceDeserializer_));
+    return Context.create(Clock.systemUTC(), config, scheduler_!, contextDataProvider_!.getContextData(),
+        contextDataProvider_!, contextEventHandler_!, contextEventLogger_, variableParser_!,
+        AudienceMatcher(audienceDeserializer_!));
   }
 
   Context createContextWith(ContextConfig config, ContextData data) {
-    return Context.create(Clock.systemUTC(), config, scheduler_, CompletableFuture.completedFuture(data),
-        contextDataProvider_, contextEventHandler_, contextEventLogger_, variableParser_,
-        new AudienceMatcher(audienceDeserializer_));
+    return Context.create(Clock.systemUTC(), config, scheduler_!, Future.value(data),
+        contextDataProvider_!, contextEventHandler_!, contextEventLogger_, variableParser_!,
+        AudienceMatcher(audienceDeserializer_!));
   }
 
   Future<ContextData> getContextData() {
-    return contextDataProvider_.getContextData();
+    return contextDataProvider_!.getContextData();
   }
 
   @override
@@ -76,7 +76,7 @@ class ABSmartly implements Closeable {
     if (scheduler_ != null) {
       try {
 
-        await Future.delayed(Duration(milliseconds: 5000));
+        await Future.delayed(const Duration(milliseconds: 5000));
         // scheduler_.awaitTermination(5000, TimeUnit.MILLISECONDS);
       }
     catch(e) {}
@@ -97,7 +97,6 @@ class ABSmartly implements Closeable {
   Timer? scheduler_;
 
   void scheduleTask() {
-
     scheduler_ = Timer(const Duration(seconds: 5), () {});
   }
 }

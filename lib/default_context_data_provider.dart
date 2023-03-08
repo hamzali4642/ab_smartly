@@ -6,7 +6,7 @@ import 'json/context_data.dart';
   DefaultContextDataProvider(this.client_);
 
   @override
-  Future<ContextData?> getContextData() {
+  Future<ContextData> getContextData() {
     return client_.getContextData();
   }
 

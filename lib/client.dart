@@ -71,52 +71,42 @@ class Client implements Closeable {
   Future<ContextData> getContextData() {
 
     Completer<ContextData> dataFuture = Completer<ContextData>();
-    final Executor executor =
-        executor_ ?? dataFuture.defaultExecutor();
 
+    httpClient_.get(url_, query_, null).then((response) {
+      final int code = response.getStatusCode() ?? 0;
+      if ((code / 100) == 2) {
 
-
-
-    CompletableFuture.runAsync(() {
-
-      httpClient_.get(url_, query_, null).then((response) {
-        final int code = response.getStatusCode();
-        if ((code / 100) == 2) {
-
-          final Uint8List content = Uint8List.fromList(response.getContent());
-          dataFuture.complete(
-              deserializer_!.deserialize(Uint8List.fromList(response.getContent()), 0, content.length));
-        } else {
-          dataFuture.completeError(Exception(response.getStatusMessage()));
-        }
-      }).catchError((exception) {
-        dataFuture.completeError(exception);
-      });
-    }, executor);
+        final Uint8List content = Uint8List.fromList(response.getContent() ?? []);
+        dataFuture.complete(
+            deserializer_!.deserialize(Uint8List.fromList(response.getContent() ?? []), 0, content.length));
+      } else {
+        dataFuture.completeError(Exception(response.getStatusMessage()));
+      }
+    }).catchError((exception) {
+      dataFuture.completeError(exception);
+    });
 
     return dataFuture.future;
   }
 
   Future<void> publish(final PublishEvent event) {
     Completer<void> publishFuture = Completer<void>();
-    final Executor executor =
-        executor_ ?? publishFuture.defaultExecutor();
 
-    CompletableFuture.supplyAsync(() => serializer_?.serialize(event), executor)
-        .thenCompose(
-            (content) => httpClient_.put(url_, null, headers_, content))
-        .then((response) {
-      final int code = response.statusCode;
+    var content = serializer_?.serialize(event);
+
+    httpClient_.put(url_, null, headers_, content).then((response) {
+      final int code = response.getStatusCode() ?? 0;
       if ((code / 100) == 2) {
         publishFuture.complete();
       } else {
-        publishFuture.completeError(Exception(response.statusMessage));
+        publishFuture.completeError(Exception(response.getStatusMessage() ?? ""));
       }
     }).catchError((exception) {
       publishFuture.completeError(exception);
     });
 
-    return publishFuture;
+
+    return publishFuture.future;
   }
 
   @override

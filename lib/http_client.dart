@@ -2,21 +2,21 @@ import 'package:ab_smartly/java_system_classes/closeable.dart';
 
 abstract class HTTPClient extends Closeable{
   Future<Response> get(
-      String url, Map<String, String> query, Map<String, String>? headers);
+      String url, Map<String, String>? query, Map<String, String>? headers);
 
   Future<Response> put(String url, Map<String, String>? query,
-      Map<String, String> headers, List<int> body);
+      Map<String, String>? headers, List<int>? body);
 
-  Future<Response> post(String url, Map<String, String> query,
-      Map<String, String> headers, List<int> body);
+  Future<Response> post(String url, Map<String, String>? query,
+      Map<String, String>? headers, List<int>? body);
 }
 
 abstract class Response {
-  int getStatusCode();
+  int? getStatusCode();
 
-  String getStatusMessage();
+  String? getStatusMessage();
 
-  String getContentType();
+  String? getContentType();
 
-  List<int> getContent();
+  List<int>? getContent();
 }
