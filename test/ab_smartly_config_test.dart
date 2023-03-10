@@ -1,0 +1,62 @@
+import 'dart:async';
+
+import 'package:ab_smartly/ab_smartly_config.dart';
+import 'package:ab_smartly/client.mocks.dart';
+import 'package:ab_smartly/context_data_provider.mocks.dart';
+import 'package:ab_smartly/context_event_handler.mocks.dart';
+import 'package:ab_smartly/context_event_logger.mocks.dart';
+import 'package:ab_smartly/variable_parser.mocks.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  group('ABSmartlyConfig', () {
+    test('setContextDataProvider', () {
+      final provider = MockContextDataProvider();
+      final config = ABSmartlyConfig.create().setContextDataProvider(provider);
+      expect(config.getContextDataProvider(), equals(provider));
+    });
+
+    test('setContextEventHandler', () {
+      final handler = MockContextEventHandler();
+      final config = ABSmartlyConfig.create().setContextEventHandler(handler);
+      expect(config.getContextEventHandler(), equals(handler));
+    });
+
+    test('setVariableParser', () {
+      final parser = MockVariableParser();
+      final config = ABSmartlyConfig.create().setVariableParser(parser);
+      expect(config.getVariableParser(), equals(parser));
+    });
+
+    test('setScheduler', () {
+      final scheduler = Timer(const Duration(seconds: 5), () { });
+      final config = ABSmartlyConfig.create().setScheduler(scheduler);
+      expect(config.getScheduler(), equals(scheduler));
+    });
+
+    test('setContextEventLogger', () {
+      final logger = MockContextEventLogger();
+      final config = ABSmartlyConfig.create().setContextEventLogger(logger);
+      expect(config.getContextEventLogger(), equals(logger));
+    });
+
+    test('setAll', () {
+      final handler = MockContextEventHandler();
+      final provider = MockContextDataProvider();
+      final parser = MockVariableParser();
+      final scheduler = Timer(const Duration(seconds: 5), () { });
+      final client = MockClient();
+      final config = ABSmartlyConfig.create()
+          .setVariableParser(parser)
+          .setContextDataProvider(provider)
+          .setContextEventHandler(handler)
+          .setScheduler(scheduler)
+          .setClient(client);
+      expect(config.getContextDataProvider(), equals(provider));
+      expect(config.getContextEventHandler(), equals(handler));
+      expect(config.getVariableParser(), equals(parser));
+      expect(config.getScheduler(), equals(scheduler));
+      expect(config.getClient(), equals(client));
+    });
+  });
+}
