@@ -12,6 +12,10 @@ import 'executor.dart';
 import 'http_client.dart';
 import 'json/context_data.dart';
 import 'json/publish_event.dart';
+import 'package:mockito/annotations.dart';
+
+@GenerateNiceMocks([MockSpec<Client>()])
+
 
 class Client implements Closeable {
   static Client create(ClientConfig config, {HTTPClient? httpClient}) {

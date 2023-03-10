@@ -9,6 +9,9 @@ import 'package:ab_smartly/http_client.dart';
 import 'default_http_client_config.dart';
 
 
+import 'package:mockito/annotations.dart';
+@GenerateNiceMocks([MockSpec<DefaultHTTPClient>()])
+
 class DefaultHTTPClient implements HTTPClient {
   factory DefaultHTTPClient.create(final DefaultHTTPClientConfig config) {
     return DefaultHTTPClient(config);

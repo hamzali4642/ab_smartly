@@ -25,7 +25,7 @@ class MockOperator extends _i1.Mock implements _i2.Operator {
   @override
   dynamic evaluate(
     _i3.Evaluator? evaluator,
-    Object? args,
+    dynamic args,
   ) =>
       super.noSuchMethod(
         Invocation.method(

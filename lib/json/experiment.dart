@@ -20,7 +20,7 @@ class Experiment {
   late List<ExperimentApplication> applications;
   late List<ExperimentVariant> variants;
   late bool audienceStrict;
-  late String audience;
+  late String? audience;
 
   Experiment({
     required this.id,

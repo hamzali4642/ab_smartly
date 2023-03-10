@@ -25,17 +25,26 @@ import 'json/exposure.dart';
 import 'json/goal_achievement.dart';
 import 'json/publish_event.dart';
 import 'json/unit.dart';
+import 'package:mockito/annotations.dart';
 
+@GenerateNiceMocks([MockSpec<Context>()])
 class Context implements Closeable {
   bool dataFutureCheck = false;
 
-  factory Context.create( Clock clock,  final ContextConfig config,
-       final Timer scheduler,
-       final Future<ContextData> dataFuture,  final ContextDataProvider dataProvider,
-       final ContextEventHandler eventHandler, final ContextEventLogger eventLogger,
-       final VariableParser variableParser,  AudienceMatcher audienceMatcher){
-    return Context(clock, config, dataFuture, scheduler, dataProvider, eventHandler, eventLogger, variableParser, audienceMatcher);
+  factory Context.create(
+      Clock clock,
+      final ContextConfig config,
+      final Timer scheduler,
+      final Future<ContextData> dataFuture,
+      final ContextDataProvider dataProvider,
+      final ContextEventHandler eventHandler,
+      final ContextEventLogger eventLogger,
+      final VariableParser variableParser,
+      AudienceMatcher audienceMatcher) {
+    return Context(clock, config, dataFuture, scheduler, dataProvider,
+        eventHandler, eventLogger, variableParser, audienceMatcher);
   }
+
   Context(
       Clock clock,
       ContextConfig config,
@@ -78,11 +87,9 @@ class Context implements Closeable {
     final Map<String, int>? cassignments = config.getCustomAssignments();
     cassignments_ = <String, int>{};
 
-
-    dataFuture.whenComplete((){
+    dataFuture.whenComplete(() {
       dataFutureCheck = true;
     });
-
 
     if (dataFutureCheck) {
       dataFuture.then((data) {
@@ -673,14 +680,14 @@ class Context implements Closeable {
           final String unitType = experiment.data.unitType;
 
           if (experiment.data.audience != null &&
-              experiment.data.audience.isNotEmpty) {
+              experiment.data.audience!.isNotEmpty) {
             final Map<String, dynamic> attrs = <String, dynamic>{};
             for (final Attribute attr in attributes_) {
               attrs[attr.name] = attr.value;
             }
 
             final Result? match =
-                audienceMatcher_!.evaluate(experiment.data.audience, attrs);
+                audienceMatcher_!.evaluate(experiment.data.audience!, attrs);
             if (match != null) {
               assignment.audienceMismatch = !match.get();
             }
@@ -882,7 +889,6 @@ class Context implements Closeable {
       index_ = index;
       indexVariables_ = indexVariables;
       data_ = data;
-
       setRefreshTimer();
     } finally {
       dataLock_.release();
@@ -924,14 +930,11 @@ class Context implements Closeable {
   AudienceMatcher? audienceMatcher_;
   Map<String, String>? units_;
   bool? failed_;
-
   final ReadWriteMutex dataLock_ = ReadWriteMutex();
   ContextData? data_;
   Map<String, ExperimentVariables>? index_;
   Map<String, List<ExperimentVariables>>? indexVariables_;
-
   final ReadWriteMutex contextLock_ = ReadWriteMutex();
-
   late Map<String, Uint8List> hashedUnits_;
   late Map<String, VariantAssigner> assigners_;
   final Map<String, Assignment> assignmentCache_ = <String, Assignment>{};
@@ -940,22 +943,17 @@ class Context implements Closeable {
   final Mutex eventLock_ = Mutex();
   final List<Exposure> exposures_ = [];
   final List<GoalAchievement> achievements_ = [];
-
   final List<Attribute> attributes_ = [];
   late Map<String, int> overrides_;
   late Map<String, int> cassignments_;
-
   int pendingCount_ = 0;
   bool closing_ = false;
   bool closed_ = false;
   bool refreshing_ = false;
-
   Completer<void>? readyFuture_;
   Completer<void>? closingFuture_;
   Completer<void>? refreshFuture_;
-
   final Mutex timeoutLock_ = Mutex();
-
   Timer? timeout_;
   Timer? refreshTimer_;
   late Timer scheduler_;
@@ -968,14 +966,12 @@ class Context implements Closeable {
         list1.length != list2.length) {
       return false;
     }
-
     // check if elements are equal
     for (int i = 0; i < list1.length; i++) {
       if (list1[i] != list2[i]) {
         return false;
       }
     }
-
     return true;
   }
 }
@@ -998,10 +994,7 @@ class Assignment {
   late bool eligible;
   late bool fullOn;
   late bool custom;
-
   late bool audienceMismatch;
-
   Map<String, dynamic>? variables;
-
   bool exposed = false;
 }

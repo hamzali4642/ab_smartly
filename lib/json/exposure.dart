@@ -3,7 +3,7 @@ import 'dart:ui';
 class Exposure {
   late int id;
   late String name;
-  late String unit;
+  late String? unit;
   late int variant;
   late int exposedAt;
   late bool assigned;
@@ -13,18 +13,19 @@ class Exposure {
   late bool custom;
   late bool audienceMismatch;
 
-  Exposure(
-      {required this.id,
-      required this.name,
-      required this.unit,
-      required this.variant,
-      required this.exposedAt,
-      required this.assigned,
-      required this.eligible,
-      required this.overridden,
-      required this.fullOn,
-      required this.custom,
-      required this.audienceMismatch});
+  Exposure({
+    required this.id,
+    required this.name,
+    required this.unit,
+    required this.variant,
+    required this.exposedAt,
+    required this.assigned,
+    required this.eligible,
+    required this.overridden,
+    required this.fullOn,
+    required this.custom,
+    required this.audienceMismatch,
+  });
 
   @override
   bool operator ==(Object other) {
@@ -66,19 +67,19 @@ class Exposure {
     audienceMismatch = data["audienceMismatch"];
   }
 
-  Map<String, dynamic> toMap(){
-    return{
-      "id" : id,
-      "name" : name,
-      "unit" : unit,
-      "variant" : variant,
-      "exposedAt" : exposedAt,
-      "assigned" : assigned,
-      "eligible" : eligible,
-      "overridden" : overridden,
-      "fullOn" : fullOn,
-      "custom" : custom,
-      "audienceMismatch" : audienceMismatch,
+  Map<String, dynamic> toMap() {
+    return {
+      "id": id,
+      "name": name,
+      "unit": unit,
+      "variant": variant,
+      "exposedAt": exposedAt,
+      "assigned": assigned,
+      "eligible": eligible,
+      "overridden": overridden,
+      "fullOn": fullOn,
+      "custom": custom,
+      "audienceMismatch": audienceMismatch,
     };
   }
 }
