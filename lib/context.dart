@@ -73,7 +73,7 @@ class Context implements Closeable {
     assigners_ = <String, VariantAssigner>{};
     hashedUnits_ = <String, Uint8List>{};
 
-    final Map<String, dynamic> attributes = config.getAttributes();
+    final Map<String, dynamic>? attributes = config.getAttributes();
     if (attributes != null) {
       setAttributes(attributes);
     }

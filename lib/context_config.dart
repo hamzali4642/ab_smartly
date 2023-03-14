@@ -26,19 +26,19 @@ class ContextConfig {
 
   ContextConfig setAttribute(final String name, final Object value) {
     attributes_ ??= {};
-    attributes_[name] = value;
+    attributes_?[name] = value;
     return this;
   }
 
   ContextConfig setAttributes(final Map<String, dynamic> attributes) {
     attributes_;
-    attributes_.addAll(attributes);
+    attributes_?.addAll(attributes);
     return this;
   }
 
-  dynamic getAttribute(final String name) => attributes_[name];
+  dynamic getAttribute(final String name) => attributes_?[name];
 
-  Map<String, dynamic> getAttributes() => attributes_;
+  Map<String, dynamic>? getAttributes() => attributes_;
 
   ContextConfig setOverride(final String experimentName, int variant) {
     overrides_ ??= {};
@@ -89,7 +89,7 @@ class ContextConfig {
   int getRefreshInterval() => refreshInterval;
 
    Map<String, String>? units_;
-  late Map<String, dynamic> attributes_;
+   Map<String, dynamic>? attributes_;
   late Map<String, int> overrides_;
   late Map<String, int>? cassigmnents_;
   int publishDelay = 100;
