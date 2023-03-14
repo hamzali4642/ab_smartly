@@ -9,7 +9,7 @@ class ContextConfig {
 
   ContextConfig setUnit(final String unitType, final String uid) {
     units_ ??= {};
-    units_[unitType] = uid;
+    units_?[unitType] = uid;
     return this;
   }
 
@@ -20,9 +20,9 @@ class ContextConfig {
     return this;
   }
 
-  String? getUnit(final String unitType) => units_[unitType];
+  String? getUnit(final String unitType) => units_?[unitType];
 
-  Map<String, String> getUnits() => units_;
+  Map<String, String>? getUnits() => units_;
 
   ContextConfig setAttribute(final String name, final Object value) {
     attributes_ ??= {};
@@ -88,7 +88,7 @@ class ContextConfig {
 
   int getRefreshInterval() => refreshInterval;
 
-  late Map<String, String> units_;
+   Map<String, String>? units_;
   late Map<String, dynamic> attributes_;
   late Map<String, int> overrides_;
   late Map<String, int>? cassigmnents_;

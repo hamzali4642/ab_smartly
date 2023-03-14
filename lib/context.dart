@@ -65,7 +65,7 @@ class Context implements Closeable {
 
     units_ = <String, String>{};
 
-    final Map<String, String> units = config.getUnits();
+    final Map<String, String> units = config.getUnits()??{};
     if (units != null) {
       setUnits(units);
     }

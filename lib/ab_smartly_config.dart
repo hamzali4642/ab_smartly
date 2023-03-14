@@ -1,95 +1,93 @@
 import 'dart:async';
+
 import 'package:ab_smartly/variable_parser.dart';
+
 import 'audience_deserializer.dart';
+import 'client.dart';
 import 'context_data_provider.dart';
 import 'context_event_handler.dart';
-import 'context_event_logger.dart';
-import 'client.dart';
 import 'default_audience_deserializer.dart';
 import 'default_variable_parser.dart';
 
-class ABSmartlyConfig{
-
-
-   static ABSmartlyConfig create() {
+class ABSmartlyConfig {
+  static ABSmartlyConfig create() {
     return ABSmartlyConfig();
   }
 
   ABSmartlyConfig();
 
-   ContextDataProvider? getContextDataProvider() {
+  ContextDataProvider? getContextDataProvider() {
     return contextDataProvider_;
   }
 
-   ABSmartlyConfig setContextDataProvider( ContextDataProvider contextDataProvider) {
+  ABSmartlyConfig setContextDataProvider(
+      ContextDataProvider contextDataProvider) {
     contextDataProvider_ = contextDataProvider;
     return this;
   }
 
-   ContextEventHandler? getContextEventHandler() {
+  ContextEventHandler? getContextEventHandler() {
     return contextEventHandler_;
   }
 
-   ABSmartlyConfig setContextEventHandler(ContextEventHandler contextEventHandler) {
+  ABSmartlyConfig setContextEventHandler(
+      ContextEventHandler contextEventHandler) {
     contextEventHandler_ = contextEventHandler;
     return this;
   }
 
-   VariableParser getVariableParser() {
+  VariableParser getVariableParser() {
     return variableParser_ ?? DefaultVariableParser();
   }
 
-   ABSmartlyConfig setVariableParser( VariableParser variableParser) {
+  ABSmartlyConfig setVariableParser(VariableParser variableParser) {
     variableParser_ = variableParser;
     return this;
   }
 
-   // ScheduledExecutorService getScheduler() {
-   Timer? getScheduler() {
-
-     return scheduler_;
+  // ScheduledExecutorService getScheduler() {
+  Timer? getScheduler() {
+    return scheduler_;
   }
 
-   //ABSmartlyConfig setScheduler( ScheduledExecutorService scheduler) {
-   ABSmartlyConfig setScheduler( Timer scheduler) {
+  //ABSmartlyConfig setScheduler( ScheduledExecutorService scheduler) {
+  ABSmartlyConfig setScheduler(Timer scheduler) {
     scheduler_ = scheduler;
     return this;
   }
 
-
-   AudienceDeserializer getAudienceDeserializer() {
-    return audienceDeserializer_??DefaultAudienceDeserializer();
+  AudienceDeserializer getAudienceDeserializer() {
+    return audienceDeserializer_ ?? DefaultAudienceDeserializer();
   }
 
-   ABSmartlyConfig setAudienceDeserializer( AudienceDeserializer audienceDeserializer) {
+  ABSmartlyConfig setAudienceDeserializer(
+      AudienceDeserializer audienceDeserializer) {
     audienceDeserializer_ = audienceDeserializer;
     return this;
   }
 
-   Client? getClient() {
+  Client? getClient() {
     return client_;
   }
 
-   ABSmartlyConfig setClient(Client client) {
+  ABSmartlyConfig setClient(Client client) {
     client_ = client;
     return this;
   }
 
+  ContextDataProvider? contextDataProvider_;
+  ContextEventHandler? contextEventHandler_;
 
-   ContextDataProvider? contextDataProvider_;
-   ContextEventHandler? contextEventHandler_;
+  VariableParser? variableParser_;
 
-   VariableParser? variableParser_;
+  AudienceDeserializer? audienceDeserializer_;
 
-   AudienceDeserializer? audienceDeserializer_;
- // late ScheduledExecutorService scheduler_;
-   Client? client_;
+  // late ScheduledExecutorService scheduler_;
+  Client? client_;
 
-   Timer? scheduler_;
+  Timer? scheduler_;
 
   void scheduleTask() {
-    scheduler_ = Timer(const Duration(seconds: 5), () {
-    });
+    scheduler_ = Timer(const Duration(seconds: 5), () {});
   }
-
 }
