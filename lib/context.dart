@@ -102,7 +102,7 @@ class Context implements Closeable {
       dataFuture.then((data) {
         setData(data);
 
-        readyFuture_!.complete(null);
+        readyFuture_!.complete();
         readyFuture_ = null;
 
         logEvent(EventType.Ready, data);
@@ -112,7 +112,7 @@ class Context implements Closeable {
         }
       }).catchError((exception) {
         setDataFailed(exception);
-        readyFuture_!.complete(null);
+        readyFuture_!.complete();
         readyFuture_ = null;
         logError(exception);
 
