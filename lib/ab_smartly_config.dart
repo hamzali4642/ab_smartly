@@ -5,6 +5,7 @@ import 'context_data_provider.dart';
 import 'context_event_handler.dart';
 import 'context_event_logger.dart';
 import 'client.dart';
+import 'default_audience_deserializer.dart';
 import 'default_variable_parser.dart';
 
 class ABSmartlyConfig{
@@ -44,7 +45,7 @@ class ABSmartlyConfig{
   }
 
    // ScheduledExecutorService getScheduler() {
-   Timer getScheduler() {
+   Timer? getScheduler() {
 
      return scheduler_;
   }
@@ -57,7 +58,7 @@ class ABSmartlyConfig{
 
 
    AudienceDeserializer getAudienceDeserializer() {
-    return audienceDeserializer_;
+    return audienceDeserializer_??DefaultAudienceDeserializer();
   }
 
    ABSmartlyConfig setAudienceDeserializer( AudienceDeserializer audienceDeserializer) {
@@ -65,7 +66,7 @@ class ABSmartlyConfig{
     return this;
   }
 
-   Client getClient() {
+   Client? getClient() {
     return client_;
   }
 
@@ -80,11 +81,11 @@ class ABSmartlyConfig{
 
    VariableParser? variableParser_;
 
-  late AudienceDeserializer audienceDeserializer_;
+   AudienceDeserializer? audienceDeserializer_;
  // late ScheduledExecutorService scheduler_;
-  late Client client_;
+   Client? client_;
 
-  late Timer scheduler_;
+   Timer? scheduler_;
 
   void scheduleTask() {
     scheduler_ = Timer(const Duration(seconds: 5), () {
