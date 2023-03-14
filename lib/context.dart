@@ -98,21 +98,17 @@ class Context implements Closeable {
       });
     } else {
       readyFuture_ = Completer<Future<void>>();
-
       dataFuture.then((data) {
         setData(data);
-
-        readyFuture_!.complete();
+        readyFuture_?.complete();
         readyFuture_ = null;
-
         logEvent(EventType.Ready, data);
-
         if (getPendingCount() > 0) {
           setTimeout();
         }
       }).catchError((exception) {
         setDataFailed(exception);
-        readyFuture_!.complete();
+        readyFuture_?.complete();
         readyFuture_ = null;
         logError(exception);
 
