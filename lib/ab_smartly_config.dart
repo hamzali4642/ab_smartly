@@ -15,7 +15,7 @@ class ABSmartlyConfig{
 
   ABSmartlyConfig();
 
-   ContextDataProvider getContextDataProvider() {
+   ContextDataProvider? getContextDataProvider() {
     return contextDataProvider_;
   }
 
@@ -24,7 +24,7 @@ class ABSmartlyConfig{
     return this;
   }
 
-   ContextEventHandler getContextEventHandler() {
+   ContextEventHandler? getContextEventHandler() {
     return contextEventHandler_;
   }
 
@@ -82,8 +82,8 @@ class ABSmartlyConfig{
   }
 
 
-  late ContextDataProvider contextDataProvider_;
-  late ContextEventHandler contextEventHandler_;
+   ContextDataProvider? contextDataProvider_;
+   ContextEventHandler? contextEventHandler_;
 
   late ContextEventLogger contextEventLogger_;
   late VariableParser variableParser_;

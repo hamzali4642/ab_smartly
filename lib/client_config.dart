@@ -1,6 +1,10 @@
 import 'dart:core';
+
+import 'package:ab_smartly/default_context_data_serializer.dart';
+
 import 'context_data_deserializer.dart';
 import 'context_event_serializer.dart';
+import 'default_context_event_serializer.dart';
 import 'executor.dart';
 
 class ClientConfig {
@@ -17,7 +21,8 @@ class ClientConfig {
           .setEndpoint(properties["${prefix}endpoint"])
           .setEnvironment(properties["${prefix}environment"])
           .setApplication(properties["${prefix}application"])
-          .setAPIKey(properties["${prefix}apikey"]);
+          .setAPIKey(properties["${prefix}apikey"])
+          .setContextDataDeserializer(DefaultContextDataDeserializer());
     }
   }
 
@@ -60,7 +65,7 @@ class ClientConfig {
   }
 
   ContextDataDeserializer getContextDataDeserializer() {
-    return deserializer_;
+    return deserializer_ ?? DefaultContextDataDeserializer();
   }
 
   ClientConfig setContextDataDeserializer(
@@ -70,7 +75,7 @@ class ClientConfig {
   }
 
   ContextEventSerializer getContextEventSerializer() {
-    return serializer_;
+    return serializer_ ?? DefaultContextEventSerializer();
   }
 
   ClientConfig setContextEventSerializer(ContextEventSerializer serializer) {
@@ -78,7 +83,7 @@ class ClientConfig {
     return this;
   }
 
-  Executor getExecutor() {
+  Executor? getExecutor() {
     return executor_;
   }
 
@@ -91,7 +96,7 @@ class ClientConfig {
   late String? apiKey_;
   late String? environment_;
   late String? application_;
-  late final Executor executor_;
-  late ContextDataDeserializer deserializer_;
-  late ContextEventSerializer serializer_;
+   Executor? executor_;
+  ContextDataDeserializer? deserializer_;
+  ContextEventSerializer? serializer_;
 }
