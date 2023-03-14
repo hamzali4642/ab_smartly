@@ -5,8 +5,9 @@ import 'dart:typed_data';
 
 import 'package:ab_smartly/helper/mutex/mutex.dart';
 import 'package:ab_smartly/variable_parser.dart';
-import 'audience_matcher.dart';
+import 'package:mockito/annotations.dart';
 
+import 'audience_matcher.dart';
 import 'context_config.dart';
 import 'context_data_provider.dart';
 import 'context_event_handler.dart';
@@ -25,7 +26,6 @@ import 'json/exposure.dart';
 import 'json/goal_achievement.dart';
 import 'json/publish_event.dart';
 import 'json/unit.dart';
-import 'package:mockito/annotations.dart';
 
 @GenerateNiceMocks([MockSpec<Context>()])
 class Context implements Closeable {
@@ -65,7 +65,7 @@ class Context implements Closeable {
 
     units_ = <String, String>{};
 
-    final Map<String, String> units = config.getUnits()??{};
+    final Map<String, String> units = config.getUnits() ?? {};
     if (units != null) {
       setUnits(units);
     }
@@ -935,8 +935,8 @@ class Context implements Closeable {
   final List<Exposure> exposures_ = [];
   final List<GoalAchievement> achievements_ = [];
   final List<Attribute> attributes_ = [];
-  late Map<String, int> overrides_;
-  late Map<String, int> cassignments_;
+  Map<String, int> overrides_ = {};
+  Map<String, int> cassignments_ = {};
   int pendingCount_ = 0;
   bool closing_ = false;
   bool closed_ = false;
@@ -947,7 +947,7 @@ class Context implements Closeable {
   final Mutex timeoutLock_ = Mutex();
   Timer? timeout_;
   Timer? refreshTimer_;
-   Timer? scheduler_;
+  Timer? scheduler_;
 
   bool areListsEqual(var list1, var list2) {
     // check if both are lists

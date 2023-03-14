@@ -90,8 +90,8 @@ class ContextConfig {
 
    Map<String, String>? units_;
    Map<String, dynamic>? attributes_;
-  late Map<String, int> overrides_;
-  late Map<String, int>? cassigmnents_;
+   Map<String, int> overrides_ = {};
+   Map<String, int>? cassigmnents_={};
   int publishDelay = 100;
   int refreshInterval = 0;
 }
