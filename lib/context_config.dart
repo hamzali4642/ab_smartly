@@ -73,12 +73,6 @@ class ContextConfig {
 
   Map<String, int>? getCustomAssignments() => cassigmnents_;
 
-  ContextEventLogger getEventLogger() => eventLogger_;
-
-  ContextConfig setEventLogger(ContextEventLogger eventLogger) {
-    eventLogger_ = eventLogger;
-    return this;
-  }
 
   ContextConfig setPublishDelay(int delayMs) {
     publishDelay = delayMs;
@@ -98,7 +92,6 @@ class ContextConfig {
   late Map<String, dynamic> attributes_;
   late Map<String, int> overrides_;
   late Map<String, int>? cassigmnents_;
-  late ContextEventLogger eventLogger_;
   int publishDelay = 100;
   int refreshInterval = 0;
 }

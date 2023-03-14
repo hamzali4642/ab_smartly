@@ -11,7 +11,6 @@ import 'package:ab_smartly/context_config.dart';
 import 'package:ab_smartly/context_data_provider.dart';
 import 'package:ab_smartly/context_data_provider.mocks.dart';
 import 'package:ab_smartly/context_event_handler.dart';
-import 'package:ab_smartly/context_event_logger.mocks.dart';
 import 'package:ab_smartly/default_audience_deserializer.dart';
 import 'package:ab_smartly/default_context_data_provider.dart';
 import 'package:ab_smartly/default_context_event_handler.dart';
@@ -90,7 +89,6 @@ void main() {
           dataFutureCaptor.future,
           dataProviderCaptor,
           eventHandlerCaptor,
-          MockContextEventLogger(),
           variableParserCaptor,
           audienceMatcherCaptor));
 

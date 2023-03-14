@@ -8,7 +8,6 @@ import 'package:ab_smartly/context_data_provider.mocks.dart';
 import 'package:ab_smartly/context_event_handler.dart';
 import 'package:ab_smartly/context_event_handler.mocks.dart';
 import 'package:ab_smartly/context_event_logger.dart';
-import 'package:ab_smartly/context_event_logger.mocks.dart';
 import 'package:ab_smartly/default_audience_deserializer.dart';
 import 'package:ab_smartly/default_context_data_provider.dart';
 import 'package:ab_smartly/default_context_data_serializer.dart';
@@ -86,7 +85,6 @@ void main() {
     late Future<ContextData> audienceDataFutureReady;
     late Future<ContextData> audienceStrictDataFutureReady;
     late ContextDataProvider dataProvider;
-    late ContextEventLogger eventLogger;
     late ContextEventHandler eventHandler;
     late VariableParser variableParser;
     late AudienceMatcher audienceMatcher;
@@ -123,7 +121,6 @@ void main() {
           Future<ContextData>.value(audienceStrictData);
       dataProvider = MockContextDataProvider();
       eventHandler = MockContextEventHandler();
-      eventLogger = MockContextEventLogger();
       variableParser = DefaultVariableParser();
       audienceMatcher = AudienceMatcher(DefaultAudienceDeserializer());
       scheduler = Timer(const Duration(seconds: 5), () {});
@@ -139,12 +136,11 @@ void main() {
             dataFuture,
             dataProvider,
             eventHandler,
-            eventLogger,
             variableParser,
             audienceMatcher);
       }
       return Context.create(clock, config, scheduler, dataFuture, dataProvider,
-          eventHandler, eventLogger, variableParser, audienceMatcher);
+          eventHandler, variableParser, audienceMatcher);
     }
 
     Context createReadyContext(ContextData? data) {
@@ -157,7 +153,7 @@ void main() {
             dataFutureReady,
             dataProvider,
             eventHandler,
-            eventLogger,
+            
             variableParser,
             audienceMatcher);
       }
@@ -168,7 +164,7 @@ void main() {
           Future.value(data),
           dataProvider,
           eventHandler,
-          eventLogger,
+          
           variableParser,
           audienceMatcher);
     }
@@ -225,33 +221,7 @@ void main() {
       expect(context.isFailed, isTrue);
     });
 
-    test('callsEventLoggerWhenReady', () async {
-      final context = createContext(null, dataFuture.future);
-      dataFuture.complete(data);
-      await context.waitUntilReady();
-      verify(() {
-        eventLogger.handleEvent(context, EventType.Ready, data);
-      });
-    });
 
-    test('callsEventLoggerWithCompletedFuture', () {
-      final context = createReadyContext(null);
-      verify(() {
-        eventLogger.handleEvent(context, EventType.Ready, data);
-      }).called(1);
-    });
-
-    test('callsEventLoggerWithException', () {
-      final context = createContext(null, dataFuture.future);
-
-      final error = Exception('FAILED');
-      dataFuture.completeError(error);
-
-      context.waitUntilReady();
-      verify(() {
-        eventLogger.handleEvent(context, EventType.Error, error);
-      }).called(1);
-    });
 
     test('waitUntilReady', () async {
       final context = createContext(null, dataFuture.future);
@@ -772,41 +742,6 @@ void main() {
       expect(0, context.getPendingCount());
     });
 
-    test("getVariableValueCallsEventLogger", () {
-      final Context context = createReadyContext(null);
-
-      clearInteractions(eventLogger);
-
-      context.getVariableValue("banner.border", null);
-      context.getVariableValue("banner.size", null);
-
-      final List<Exposure> exposures = [
-        Exposure(
-            id: 1,
-            name: "exp_test_ab",
-            unit: "session_id",
-            variant: 1,
-            exposedAt: clock.millis(),
-            assigned: true,
-            eligible: true,
-            overridden: false,
-            fullOn: false,
-            custom: false,
-            audienceMismatch: false),
-      ];
-
-      for (Exposure expected in exposures) {
-        verify(() {
-          eventLogger.handleEvent(context, EventType.Exposure, expected);
-        }).called(1);
-      }
-
-      // verify not called again with the same exposure
-
-      clearInteractions(eventLogger);
-      context.getVariableValue("banner.border", null);
-      context.getVariableValue("banner.size", null);
-    });
 
     test("getVariableKeys", () {
       final Context context = createContext(null, refreshDataFutureReady);
@@ -1165,52 +1100,6 @@ void main() {
       }).called(1);
     });
 
-    test("getTreatmentCallsEventLogger", () {
-      final Context context = createReadyContext(null);
 
-      clearInteractions(eventLogger);
-
-      context.getTreatment("exp_test_ab");
-      context.getTreatment("not_found");
-
-      final List<Exposure> exposures = [
-        Exposure(
-            id: 1,
-            name: "exp_test_ab",
-            unit: "session_id",
-            variant: 1,
-            exposedAt: clock.millis(),
-            assigned: true,
-            eligible: true,
-            overridden: false,
-            fullOn: false,
-            custom: false,
-            audienceMismatch: false),
-        Exposure(
-          id: 0,
-          name: "not_found",
-          unit: null,
-          variant: 0,
-          exposedAt: clock.millis(),
-          assigned: false,
-          eligible: true,
-          overridden: false,
-          fullOn: false,
-          custom: false,
-          audienceMismatch: false,
-        ),
-      ];
-
-      for (Exposure expected in exposures) {
-        verify(() {
-          eventLogger.handleEvent(context, EventType.Exposure, expected);
-        }).called(1);
-
-        // verify not called again with the same exposure
-        clearInteractions(eventLogger);
-        context.getTreatment("exp_test_ab");
-        context.getTreatment("not_found");
-      }
-    });
   });
 }

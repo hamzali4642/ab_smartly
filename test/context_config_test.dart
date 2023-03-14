@@ -1,6 +1,5 @@
 
 import 'package:ab_smartly/context_config.dart';
-import 'package:ab_smartly/context_event_logger.mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -50,12 +49,6 @@ void main() {
       expect(config.getCustomAssignment('exp_test'), equals(2));
       expect(config.getCustomAssignment('exp_test_new'), equals(1));
       expect(config.getCustomAssignments(), equals(cassignments));
-    });
-
-    test('setEventLogger', () {
-      final logger = MockContextEventLogger();
-      final config = ContextConfig.create().setEventLogger(logger);
-      expect(config.getEventLogger(), equals(logger));
     });
 
     test('setPublishDelay', () {

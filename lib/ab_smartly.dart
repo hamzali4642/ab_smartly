@@ -25,7 +25,6 @@ class ABSmartly implements Closeable {
   ABSmartly(ABSmartlyConfig config) {
     contextDataProvider_ = config.getContextDataProvider();
     contextEventHandler_ = config.getContextEventHandler();
-    contextEventLogger_ = config.getContextEventLogger();
     variableParser_ = config.getVariableParser();
     audienceDeserializer_ = config.getAudienceDeserializer();
     scheduler_ = config.getScheduler();
@@ -52,13 +51,13 @@ class ABSmartly implements Closeable {
 
    Context createContext(ContextConfig config) {
     return Context.create(Clock.systemUTC(), config, scheduler_!, contextDataProvider_!.getContextData(),
-        contextDataProvider_!, contextEventHandler_!, contextEventLogger_, variableParser_!,
+        contextDataProvider_!, contextEventHandler_!, variableParser_!,
         AudienceMatcher(audienceDeserializer_!));
   }
 
   Context createContextWith(ContextConfig config, ContextData data) {
     return Context.create(Clock.systemUTC(), config, scheduler_!, Future.value(data),
-        contextDataProvider_!, contextEventHandler_!, contextEventLogger_, variableParser_!,
+        contextDataProvider_!, contextEventHandler_!, variableParser_!,
         AudienceMatcher(audienceDeserializer_!));
   }
 
@@ -88,7 +87,7 @@ class ABSmartly implements Closeable {
   Client? client_;
   ContextDataProvider? contextDataProvider_;
   late ContextEventHandler? contextEventHandler_;
-  late ContextEventLogger contextEventLogger_;
+  // late ContextEventLogger contextEventLogger_;
   late VariableParser? variableParser_;
   late AudienceDeserializer? audienceDeserializer_;
 

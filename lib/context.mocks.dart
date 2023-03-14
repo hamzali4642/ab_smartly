@@ -4,23 +4,23 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
-import 'dart:typed_data' as _i14;
+import 'dart:typed_data' as _i13;
 
-import 'package:ab_smartly/audience_matcher.dart' as _i13;
+import 'package:ab_smartly/audience_matcher.dart' as _i12;
 import 'package:ab_smartly/context.dart' as _i6;
-import 'package:ab_smartly/context_data_provider.dart' as _i11;
+import 'package:ab_smartly/context_data_provider.dart' as _i10;
 import 'package:ab_smartly/context_event_handler.dart' as _i9;
-import 'package:ab_smartly/context_event_logger.dart' as _i10;
+import 'package:ab_smartly/context_event_logger.dart' as _i18;
 import 'package:ab_smartly/helper/mutex/mutex.dart' as _i4;
 import 'package:ab_smartly/helper/mutex/read_write_mutex.dart' as _i3;
 import 'package:ab_smartly/internal/variant_assigner.dart' as _i8;
 import 'package:ab_smartly/java/time/clock.dart' as _i2;
-import 'package:ab_smartly/json/attribute.dart' as _i17;
+import 'package:ab_smartly/json/attribute.dart' as _i16;
 import 'package:ab_smartly/json/context_data.dart' as _i7;
-import 'package:ab_smartly/json/experiment.dart' as _i18;
-import 'package:ab_smartly/json/exposure.dart' as _i15;
-import 'package:ab_smartly/json/goal_achievement.dart' as _i16;
-import 'package:ab_smartly/variable_parser.dart' as _i12;
+import 'package:ab_smartly/json/experiment.dart' as _i17;
+import 'package:ab_smartly/json/exposure.dart' as _i14;
+import 'package:ab_smartly/json/goal_achievement.dart' as _i15;
+import 'package:ab_smartly/variable_parser.dart' as _i11;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -180,16 +180,7 @@ class MockContext extends _i1.Mock implements _i6.Context {
         returnValueForMissingStub: null,
       );
   @override
-  set eventLogger_(_i10.ContextEventLogger? _eventLogger_) =>
-      super.noSuchMethod(
-        Invocation.setter(
-          #eventLogger_,
-          _eventLogger_,
-        ),
-        returnValueForMissingStub: null,
-      );
-  @override
-  set dataProvider_(_i11.ContextDataProvider? _dataProvider_) =>
+  set dataProvider_(_i10.ContextDataProvider? _dataProvider_) =>
       super.noSuchMethod(
         Invocation.setter(
           #dataProvider_,
@@ -198,7 +189,7 @@ class MockContext extends _i1.Mock implements _i6.Context {
         returnValueForMissingStub: null,
       );
   @override
-  set variableParser_(_i12.VariableParser? _variableParser_) =>
+  set variableParser_(_i11.VariableParser? _variableParser_) =>
       super.noSuchMethod(
         Invocation.setter(
           #variableParser_,
@@ -207,7 +198,7 @@ class MockContext extends _i1.Mock implements _i6.Context {
         returnValueForMissingStub: null,
       );
   @override
-  set audienceMatcher_(_i13.AudienceMatcher? _audienceMatcher_) =>
+  set audienceMatcher_(_i12.AudienceMatcher? _audienceMatcher_) =>
       super.noSuchMethod(
         Invocation.setter(
           #audienceMatcher_,
@@ -283,13 +274,13 @@ class MockContext extends _i1.Mock implements _i6.Context {
         ),
       ) as _i3.ReadWriteMutex);
   @override
-  Map<String, _i14.Uint8List> get hashedUnits_ => (super.noSuchMethod(
+  Map<String, _i13.Uint8List> get hashedUnits_ => (super.noSuchMethod(
         Invocation.getter(#hashedUnits_),
-        returnValue: <String, _i14.Uint8List>{},
-        returnValueForMissingStub: <String, _i14.Uint8List>{},
-      ) as Map<String, _i14.Uint8List>);
+        returnValue: <String, _i13.Uint8List>{},
+        returnValueForMissingStub: <String, _i13.Uint8List>{},
+      ) as Map<String, _i13.Uint8List>);
   @override
-  set hashedUnits_(Map<String, _i14.Uint8List>? _hashedUnits_) =>
+  set hashedUnits_(Map<String, _i13.Uint8List>? _hashedUnits_) =>
       super.noSuchMethod(
         Invocation.setter(
           #hashedUnits_,
@@ -331,23 +322,23 @@ class MockContext extends _i1.Mock implements _i6.Context {
         ),
       ) as _i4.Mutex);
   @override
-  List<_i15.Exposure> get exposures_ => (super.noSuchMethod(
+  List<_i14.Exposure> get exposures_ => (super.noSuchMethod(
         Invocation.getter(#exposures_),
-        returnValue: <_i15.Exposure>[],
-        returnValueForMissingStub: <_i15.Exposure>[],
-      ) as List<_i15.Exposure>);
+        returnValue: <_i14.Exposure>[],
+        returnValueForMissingStub: <_i14.Exposure>[],
+      ) as List<_i14.Exposure>);
   @override
-  List<_i16.GoalAchievement> get achievements_ => (super.noSuchMethod(
+  List<_i15.GoalAchievement> get achievements_ => (super.noSuchMethod(
         Invocation.getter(#achievements_),
-        returnValue: <_i16.GoalAchievement>[],
-        returnValueForMissingStub: <_i16.GoalAchievement>[],
-      ) as List<_i16.GoalAchievement>);
+        returnValue: <_i15.GoalAchievement>[],
+        returnValueForMissingStub: <_i15.GoalAchievement>[],
+      ) as List<_i15.GoalAchievement>);
   @override
-  List<_i17.Attribute> get attributes_ => (super.noSuchMethod(
+  List<_i16.Attribute> get attributes_ => (super.noSuchMethod(
         Invocation.getter(#attributes_),
-        returnValue: <_i17.Attribute>[],
-        returnValueForMissingStub: <_i17.Attribute>[],
-      ) as List<_i17.Attribute>);
+        returnValue: <_i16.Attribute>[],
+        returnValueForMissingStub: <_i16.Attribute>[],
+      ) as List<_i16.Attribute>);
   @override
   Map<String, int> get overrides_ => (super.noSuchMethod(
         Invocation.getter(#overrides_),
@@ -930,7 +921,7 @@ class MockContext extends _i1.Mock implements _i6.Context {
       );
   @override
   bool experimentMatches(
-    _i18.Experiment? experiment,
+    _i17.Experiment? experiment,
     _i6.Assignment? assignment,
   ) =>
       (super.noSuchMethod(
@@ -996,7 +987,7 @@ class MockContext extends _i1.Mock implements _i6.Context {
         returnValueForMissingStub: null,
       ) as List<_i6.ExperimentVariables>?);
   @override
-  _i5.Future<_i14.Uint8List> getUnitHash(
+  _i5.Future<_i13.Uint8List> getUnitHash(
     String? unitType,
     String? unitUID,
   ) =>
@@ -1008,14 +999,14 @@ class MockContext extends _i1.Mock implements _i6.Context {
             unitUID,
           ],
         ),
-        returnValue: _i5.Future<_i14.Uint8List>.value(_i14.Uint8List(0)),
+        returnValue: _i5.Future<_i13.Uint8List>.value(_i13.Uint8List(0)),
         returnValueForMissingStub:
-            _i5.Future<_i14.Uint8List>.value(_i14.Uint8List(0)),
-      ) as _i5.Future<_i14.Uint8List>);
+            _i5.Future<_i13.Uint8List>.value(_i13.Uint8List(0)),
+      ) as _i5.Future<_i13.Uint8List>);
   @override
   _i5.Future<_i8.VariantAssigner> getVariantAssigner(
     String? unitType,
-    _i14.Uint8List? unitHash,
+    _i13.Uint8List? unitHash,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1098,7 +1089,7 @@ class MockContext extends _i1.Mock implements _i6.Context {
       );
   @override
   void logEvent(
-    _i10.EventType? event,
+    _i18.EventType? event,
     dynamic data,
   ) =>
       super.noSuchMethod(

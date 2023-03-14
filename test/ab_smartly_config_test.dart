@@ -4,7 +4,6 @@ import 'package:ab_smartly/ab_smartly_config.dart';
 import 'package:ab_smartly/client.mocks.dart';
 import 'package:ab_smartly/context_data_provider.mocks.dart';
 import 'package:ab_smartly/context_event_handler.mocks.dart';
-import 'package:ab_smartly/context_event_logger.mocks.dart';
 import 'package:ab_smartly/variable_parser.mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -32,12 +31,6 @@ void main() {
       final scheduler = Timer(const Duration(seconds: 5), () { });
       final config = ABSmartlyConfig.create().setScheduler(scheduler);
       expect(config.getScheduler(), equals(scheduler));
-    });
-
-    test('setContextEventLogger', () {
-      final logger = MockContextEventLogger();
-      final config = ABSmartlyConfig.create().setContextEventLogger(logger);
-      expect(config.getContextEventLogger(), equals(logger));
     });
 
     test('setAll', () {

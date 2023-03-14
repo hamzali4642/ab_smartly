@@ -38,11 +38,10 @@ class Context implements Closeable {
       final Future<ContextData> dataFuture,
       final ContextDataProvider dataProvider,
       final ContextEventHandler eventHandler,
-      final ContextEventLogger eventLogger,
       final VariableParser variableParser,
       AudienceMatcher audienceMatcher) {
     return Context(clock, config, dataFuture, scheduler, dataProvider,
-        eventHandler, eventLogger, variableParser, audienceMatcher);
+        eventHandler, variableParser, audienceMatcher);
   }
 
   Context(
@@ -52,7 +51,6 @@ class Context implements Closeable {
       Timer scheduler,
       ContextDataProvider dataProvider,
       ContextEventHandler eventHandler,
-      ContextEventLogger eventLogger,
       VariableParser variableParser,
       AudienceMatcher audienceMatcher) {
     clock_ = clock;
@@ -60,7 +58,6 @@ class Context implements Closeable {
     publishDelay_ = config.getPublishDelay();
     refreshInterval_ = config.getRefreshInterval();
     eventHandler_ = eventHandler;
-    eventLogger_ = config.getEventLogger() ?? eventLogger;
     dataProvider_ = dataProvider;
     variableParser_ = variableParser;
     audienceMatcher_ = audienceMatcher;
@@ -908,23 +905,17 @@ class Context implements Closeable {
   }
 
   void logEvent(EventType event, dynamic data) {
-    if (eventLogger_ != null) {
-      eventLogger_!.handleEvent(this, event, data);
-    }
+    print("${event.toString()}: ${data.toString()}");
   }
 
   void logError(Exception error) {
-    final eventLogger_ = this.eventLogger_;
-    if (eventLogger_ != null) {
-      eventLogger_.handleEvent(this, EventType.Error, error);
-    }
+    print("${EventType.Error.toString()}: ${error.toString()}");
   }
 
   late Clock clock_;
   int? publishDelay_;
   int? refreshInterval_;
   ContextEventHandler? eventHandler_;
-  ContextEventLogger? eventLogger_;
   ContextDataProvider? dataProvider_;
   VariableParser? variableParser_;
   AudienceMatcher? audienceMatcher_;

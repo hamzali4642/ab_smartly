@@ -54,14 +54,6 @@ class ABSmartlyConfig{
     return this;
   }
 
-   ContextEventLogger getContextEventLogger() {
-    return contextEventLogger_;
-  }
-
-   ABSmartlyConfig setContextEventLogger(ContextEventLogger logger) {
-    contextEventLogger_ = logger;
-    return this;
-  }
 
    AudienceDeserializer getAudienceDeserializer() {
     return audienceDeserializer_;
@@ -85,7 +77,6 @@ class ABSmartlyConfig{
    ContextDataProvider? contextDataProvider_;
    ContextEventHandler? contextEventHandler_;
 
-  late ContextEventLogger contextEventLogger_;
   late VariableParser variableParser_;
 
   late AudienceDeserializer audienceDeserializer_;
