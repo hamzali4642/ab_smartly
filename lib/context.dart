@@ -34,7 +34,7 @@ class Context implements Closeable {
   factory Context.create(
       Clock clock,
       final ContextConfig config,
-      final Timer scheduler,
+      final Timer? scheduler,
       final Future<ContextData> dataFuture,
       final ContextDataProvider dataProvider,
       final ContextEventHandler eventHandler,
@@ -48,7 +48,7 @@ class Context implements Closeable {
       Clock clock,
       ContextConfig config,
       Future<ContextData> dataFuture,
-      Timer scheduler,
+      Timer? scheduler,
       ContextDataProvider dataProvider,
       ContextEventHandler eventHandler,
       VariableParser variableParser,
@@ -947,7 +947,7 @@ class Context implements Closeable {
   final Mutex timeoutLock_ = Mutex();
   Timer? timeout_;
   Timer? refreshTimer_;
-  late Timer scheduler_;
+   Timer? scheduler_;
 
   bool areListsEqual(var list1, var list2) {
     // check if both are lists

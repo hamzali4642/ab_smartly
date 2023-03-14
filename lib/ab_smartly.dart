@@ -50,7 +50,7 @@ class ABSmartly implements Closeable {
   }
 
    Context createContext(ContextConfig config) {
-    return Context.create(Clock.systemUTC(), config, scheduler_!, contextDataProvider_!.getContextData(),
+    return Context.create(Clock.systemUTC(), config, scheduler_, contextDataProvider_!.getContextData(),
         contextDataProvider_!, contextEventHandler_!, variableParser_!,
         AudienceMatcher(audienceDeserializer_!));
   }
