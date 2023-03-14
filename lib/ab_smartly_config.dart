@@ -5,6 +5,7 @@ import 'context_data_provider.dart';
 import 'context_event_handler.dart';
 import 'context_event_logger.dart';
 import 'client.dart';
+import 'default_variable_parser.dart';
 
 class ABSmartlyConfig{
 
@@ -34,7 +35,7 @@ class ABSmartlyConfig{
   }
 
    VariableParser getVariableParser() {
-    return variableParser_;
+    return variableParser_ ?? DefaultVariableParser();
   }
 
    ABSmartlyConfig setVariableParser( VariableParser variableParser) {
@@ -77,7 +78,7 @@ class ABSmartlyConfig{
    ContextDataProvider? contextDataProvider_;
    ContextEventHandler? contextEventHandler_;
 
-  late VariableParser variableParser_;
+   VariableParser? variableParser_;
 
   late AudienceDeserializer audienceDeserializer_;
  // late ScheduledExecutorService scheduler_;
