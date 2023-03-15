@@ -97,11 +97,11 @@ class Context implements Closeable {
         logError(exception);
       });
     } else {
-      readyFuture_ = Completer<Future<void>>();
+      readyFuture_ = Completer<Future<void>?>();
       dataFuture.then((data) {
         setData(data);
         readyFuture_?.complete();
-        readyFuture_ = null;
+        // readyFuture_ = null;
         logEvent(EventType.Ready, data);
         if (getPendingCount() > 0) {
           setTimeout();
@@ -109,7 +109,7 @@ class Context implements Closeable {
       }).catchError((exception) {
         setDataFailed(exception);
         readyFuture_?.complete();
-        readyFuture_ = null;
+        // readyFuture_ = null;
         logError(exception);
 
         return null;

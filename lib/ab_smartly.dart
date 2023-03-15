@@ -44,6 +44,7 @@ class ABSmartly implements Closeable {
 
     audienceDeserializer_ ??= DefaultAudienceDeserializer();
 
+
     if (scheduler_ == null) {
       // scheduler_ = new ScheduledThreadPoolExecutor(1);
     }
