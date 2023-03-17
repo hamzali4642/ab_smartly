@@ -47,8 +47,8 @@ class Client implements Closeable {
     if ((environment == null) || environment.isEmpty) {
       throw ArgumentError("Missing Environment configuration");
     }
-
-    url_ = "$endpoint/context";
+    // url_ = "$endpoint/context";
+    url_ = "$endpoint";
     httpClient_ = httpClient;
     deserializer_ = config.deserializer_;
     serializer_ = config.serializer_;
