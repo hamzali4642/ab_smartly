@@ -52,7 +52,7 @@ class Client implements Closeable {
     httpClient_ = httpClient;
     deserializer_ = config.deserializer_;
     serializer_ = config.serializer_;
-    executor_ = config.executor_;
+
 
     deserializer_ ??= DefaultContextDataDeserializer();
 
@@ -126,7 +126,6 @@ class Client implements Closeable {
   late final Map<String, String> query_;
   late final Map<String, String> headers_;
   late final HTTPClient httpClient_;
-  Executor? executor_;
   ContextDataDeserializer? deserializer_;
   ContextEventSerializer? serializer_;
 }

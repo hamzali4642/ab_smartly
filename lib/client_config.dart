@@ -83,20 +83,12 @@ class ClientConfig {
     return this;
   }
 
-  Executor? getExecutor() {
-    return executor_;
-  }
-
-  ClientConfig setExecutor(Executor executor) {
-    executor_ = executor;
-    return this;
-  }
 
   String? endpoint_;
   late String? apiKey_;
   late String? environment_;
   late String? application_;
-   Executor? executor_;
+
   ContextDataDeserializer? deserializer_;
   ContextEventSerializer? serializer_;
 }
