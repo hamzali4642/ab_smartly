@@ -9,7 +9,7 @@ class ContextConfig {
 
   ContextConfig setUnit(final String unitType, final String uid) {
     units_ ??= {};
-    units_[unitType] = uid;
+    units_?[unitType] = uid;
     return this;
   }
 
@@ -20,25 +20,25 @@ class ContextConfig {
     return this;
   }
 
-  String? getUnit(final String unitType) => units_[unitType];
+  String? getUnit(final String unitType) => units_?[unitType];
 
-  Map<String, String> getUnits() => units_;
+  Map<String, String>? getUnits() => units_;
 
   ContextConfig setAttribute(final String name, final Object value) {
     attributes_ ??= {};
-    attributes_[name] = value;
+    attributes_?[name] = value;
     return this;
   }
 
   ContextConfig setAttributes(final Map<String, dynamic> attributes) {
     attributes_;
-    attributes_.addAll(attributes);
+    attributes_?.addAll(attributes);
     return this;
   }
 
-  dynamic getAttribute(final String name) => attributes_[name];
+  dynamic getAttribute(final String name) => attributes_?[name];
 
-  Map<String, dynamic> getAttributes() => attributes_;
+  Map<String, dynamic>? getAttributes() => attributes_;
 
   ContextConfig setOverride(final String experimentName, int variant) {
     overrides_ ??= {};
@@ -88,10 +88,10 @@ class ContextConfig {
 
   int getRefreshInterval() => refreshInterval;
 
-  late Map<String, String> units_;
-  late Map<String, dynamic> attributes_;
-  late Map<String, int> overrides_;
-  late Map<String, int>? cassigmnents_;
+   Map<String, String>? units_;
+   Map<String, dynamic>? attributes_;
+   Map<String, int> overrides_ = {};
+   Map<String, int>? cassigmnents_={};
   int publishDelay = 100;
   int refreshInterval = 0;
 }

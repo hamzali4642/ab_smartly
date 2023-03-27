@@ -97,7 +97,7 @@ class LocaleDataException implements Exception {
   final String message;
   LocaleDataException(this.message);
   @override
-  String toString() => 'LocaleDataException: $message';
+  String toString() => 'LocaleDataException occurred: $message';
 }
 
 ///  An abstract superclass for data readers to keep the type system happy.

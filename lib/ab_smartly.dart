@@ -44,13 +44,14 @@ class ABSmartly implements Closeable {
 
     audienceDeserializer_ ??= DefaultAudienceDeserializer();
 
+
     if (scheduler_ == null) {
       // scheduler_ = new ScheduledThreadPoolExecutor(1);
     }
   }
 
    Context createContext(ContextConfig config) {
-    return Context.create(Clock.systemUTC(), config, scheduler_!, contextDataProvider_!.getContextData(),
+    return Context.create(Clock.systemUTC(), config, scheduler_, contextDataProvider_!.getContextData(),
         contextDataProvider_!, contextEventHandler_!, variableParser_!,
         AudienceMatcher(audienceDeserializer_!));
   }

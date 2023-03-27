@@ -5,8 +5,9 @@ import 'dart:typed_data';
 
 import 'package:ab_smartly/helper/mutex/mutex.dart';
 import 'package:ab_smartly/variable_parser.dart';
-import 'audience_matcher.dart';
+import 'package:mockito/annotations.dart';
 
+import 'audience_matcher.dart';
 import 'context_config.dart';
 import 'context_data_provider.dart';
 import 'context_event_handler.dart';
@@ -25,7 +26,6 @@ import 'json/exposure.dart';
 import 'json/goal_achievement.dart';
 import 'json/publish_event.dart';
 import 'json/unit.dart';
-import 'package:mockito/annotations.dart';
 
 @GenerateNiceMocks([MockSpec<Context>()])
 class Context implements Closeable {
@@ -34,7 +34,7 @@ class Context implements Closeable {
   factory Context.create(
       Clock clock,
       final ContextConfig config,
-      final Timer scheduler,
+      final Timer? scheduler,
       final Future<ContextData> dataFuture,
       final ContextDataProvider dataProvider,
       final ContextEventHandler eventHandler,
@@ -48,7 +48,7 @@ class Context implements Closeable {
       Clock clock,
       ContextConfig config,
       Future<ContextData> dataFuture,
-      Timer scheduler,
+      Timer? scheduler,
       ContextDataProvider dataProvider,
       ContextEventHandler eventHandler,
       VariableParser variableParser,
@@ -65,7 +65,7 @@ class Context implements Closeable {
 
     units_ = <String, String>{};
 
-    final Map<String, String> units = config.getUnits();
+    final Map<String, String> units = config.getUnits() ?? {};
     if (units != null) {
       setUnits(units);
     }
@@ -73,7 +73,7 @@ class Context implements Closeable {
     assigners_ = <String, VariantAssigner>{};
     hashedUnits_ = <String, Uint8List>{};
 
-    final Map<String, dynamic> attributes = config.getAttributes();
+    final Map<String, dynamic>? attributes = config.getAttributes();
     if (attributes != null) {
       setAttributes(attributes);
     }
@@ -97,23 +97,19 @@ class Context implements Closeable {
         logError(exception);
       });
     } else {
-      readyFuture_ = Completer<Future<void>>();
-
+      readyFuture_ = Completer<Future<void>?>();
       dataFuture.then((data) {
         setData(data);
-
-        readyFuture_!.complete(null);
-        readyFuture_ = null;
-
+        readyFuture_?.complete();
+        // readyFuture_ = null;
         logEvent(EventType.Ready, data);
-
         if (getPendingCount() > 0) {
           setTimeout();
         }
       }).catchError((exception) {
         setDataFailed(exception);
-        readyFuture_!.complete(null);
-        readyFuture_ = null;
+        readyFuture_?.complete();
+        // readyFuture_ = null;
         logError(exception);
 
         return null;
@@ -935,8 +931,8 @@ class Context implements Closeable {
   final List<Exposure> exposures_ = [];
   final List<GoalAchievement> achievements_ = [];
   final List<Attribute> attributes_ = [];
-  late Map<String, int> overrides_;
-  late Map<String, int> cassignments_;
+  Map<String, int> overrides_ = {};
+  Map<String, int> cassignments_ = {};
   int pendingCount_ = 0;
   bool closing_ = false;
   bool closed_ = false;
@@ -947,7 +943,7 @@ class Context implements Closeable {
   final Mutex timeoutLock_ = Mutex();
   Timer? timeout_;
   Timer? refreshTimer_;
-  late Timer scheduler_;
+  Timer? scheduler_;
 
   bool areListsEqual(var list1, var list2) {
     // check if both are lists
