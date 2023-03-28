@@ -3,6 +3,7 @@ import 'dart:core';
 import 'dart:io';
 
 
+import 'package:ab_smartly/helper/funtions.dart';
 import 'package:ab_smartly/helper/http/io_client.dart' as http_io;
 
 import 'package:ab_smartly/helper/http/http.dart' as http;
@@ -67,6 +68,7 @@ class DefaultHTTPClient implements HTTPClient {
     switch(type){
       case "GET":
         http.Response response = await client.get(Uri.parse(url + queryParams), headers: headers,);
+        Helper.response = response.body;
         return parseHttpResponse(response);
 
       case "POST":
@@ -75,7 +77,6 @@ class DefaultHTTPClient implements HTTPClient {
 
 
       case "PUT":
-        print(utf8.decode(body ?? []));
         http.Response response = await client.put(Uri.parse(url + queryParams), headers: headers, body: body, );
         // http.Response response = await client.put(Uri.parse("https://httpbin.org/put"), headers: headers, body: body, );
         return parseHttpResponse(response);
@@ -89,8 +90,7 @@ class DefaultHTTPClient implements HTTPClient {
 
   Response parseHttpResponse(http.Response response){
     var defaultResponse = DefaultResponse(statusCode: response.statusCode, statusMessage: response.reasonPhrase, contentType: response.headers["content-type"], content: response.bodyBytes);
-    print(utf8.decode(defaultResponse.content ?? []));
-
+    print(response.body);
     return defaultResponse;
   }
 
