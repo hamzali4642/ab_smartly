@@ -1080,7 +1080,7 @@ class MockContext extends _i1.Mock implements _i6.Context {
         returnValueForMissingStub: null,
       );
   @override
-  void setDataFailed(Exception? exception) => super.noSuchMethod(
+  void setDataFailed( exception) => super.noSuchMethod(
         Invocation.method(
           #setDataFailed,
           [exception],
@@ -1103,7 +1103,7 @@ class MockContext extends _i1.Mock implements _i6.Context {
         returnValueForMissingStub: null,
       );
   @override
-  void logError(Exception? error) => super.noSuchMethod(
+  void logError(error) => super.noSuchMethod(
         Invocation.method(
           #logError,
           [error],

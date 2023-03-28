@@ -11,6 +11,8 @@ class DefaultContextEventSerializer implements ContextEventSerializer {
 
   @override
   List<int>? serialize(PublishEvent event) {
+    return utf8.encode(jsonEncode(event.toMap()));
+
     try {
       return utf8.encode(jsonEncode(event.toMap()));
     } catch (e) {

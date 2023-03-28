@@ -254,7 +254,7 @@ void main() {
       when(httpClient.get('https://localhost/v1/context', expectedQuery, null))
           .thenAnswer((_) => responseFuture);
 
-      final Future<ContextData> dataFuture = client.getContextData();
+      final Future<ContextData?> dataFuture = client.getContextData();
       final actual = expectAsync0(() => expect(
           () => dataFuture.then((_) {}),
           throwsA(isA<Exception>()

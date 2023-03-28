@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
 
@@ -25,8 +26,8 @@ class DefaultHTTPClient implements HTTPClient {
       HttpClient()
         ..maxConnectionsPerHost = 20
         ..idleTimeout = Duration(milliseconds: config.getConnectionKeepAlive())
-        ..connectionTimeout = Duration(milliseconds: config.getConnectTimeout())
-        ..connectionTimeout = Duration(milliseconds: config.getConnectionRequestTimeout()),
+        // ..connectionTimeout = Duration(milliseconds: config.getConnectTimeout())
+        // ..connectionTimeout = Duration(milliseconds: config.getConnectionRequestTimeout()),
     );
     // http.Client client = ioClient;
   }
@@ -74,7 +75,9 @@ class DefaultHTTPClient implements HTTPClient {
 
 
       case "PUT":
+        print(utf8.decode(body ?? []));
         http.Response response = await client.put(Uri.parse(url + queryParams), headers: headers, body: body, );
+        // http.Response response = await client.put(Uri.parse("https://httpbin.org/put"), headers: headers, body: body, );
         return parseHttpResponse(response);
 
       default:
@@ -86,6 +89,8 @@ class DefaultHTTPClient implements HTTPClient {
 
   Response parseHttpResponse(http.Response response){
     var defaultResponse = DefaultResponse(statusCode: response.statusCode, statusMessage: response.reasonPhrase, contentType: response.headers["content-type"], content: response.bodyBytes);
+    print(utf8.decode(defaultResponse.content ?? []));
+
     return defaultResponse;
   }
 

@@ -1,6 +1,4 @@
-import 'dart:collection';
 
-import 'context_event_logger.dart';
 
 class ContextConfig {
   ContextConfig();
@@ -41,13 +39,11 @@ class ContextConfig {
   Map<String, dynamic>? getAttributes() => attributes_;
 
   ContextConfig setOverride(final String experimentName, int variant) {
-    overrides_ ??= {};
     overrides_[experimentName] = variant;
     return this;
   }
 
   ContextConfig setOverrides(final Map<String, int> overrides) {
-    overrides_ ??= {};
     overrides_.addAll(overrides);
     return this;
   }

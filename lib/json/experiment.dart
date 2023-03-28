@@ -84,10 +84,12 @@ class Experiment {
     iteration = data["iteration"];
     seedHi = data["seedHi"];
     seedLo = data["seedLo"];
-    split = data["split"];
+    List split = data["split"];
+    this.split = List.generate(split.length, (index) => split[index]);
     trafficSeedHi = data["trafficSeedHi"];
     trafficSeedLo = data["trafficSeedLo"];
-    trafficSplit = data["trafficSplit"];
+    List trafficSplit = data["trafficSplit"];
+    this.trafficSplit = List.generate(trafficSplit.length, (index) => trafficSplit[index]);
     fullOnVariant = data["fullOnVariant"];
     List applications = data["applications"] ?? [];
     this.applications = List.generate(applications.length, (index) => ExperimentApplication.fromMap(applications[index]));

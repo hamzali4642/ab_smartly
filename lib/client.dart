@@ -72,9 +72,9 @@ class Client implements Closeable {
     };
   }
 
-  Future<ContextData> getContextData() {
+  Future<ContextData?> getContextData() {
 
-    Completer<ContextData> dataFuture = Completer<ContextData>();
+    Completer<ContextData?> dataFuture = Completer<ContextData?>();
 
     httpClient_.get(url_, query_, null).then((response) {
       final int code = response.getStatusCode() ?? 0;
@@ -98,6 +98,7 @@ class Client implements Closeable {
 
     var content = serializer_?.serialize(event);
 
+    print(content);
     httpClient_.put(url_, null, headers_, content).then((response) {
       final int code = response.getStatusCode() ?? 0;
       if ((code / 100) == 2) {

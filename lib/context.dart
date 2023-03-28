@@ -35,7 +35,7 @@ class Context implements Closeable {
       Clock clock,
       final ContextConfig config,
       final Timer? scheduler,
-      final Future<ContextData> dataFuture,
+      final Future<ContextData?> dataFuture,
       final ContextDataProvider dataProvider,
       final ContextEventHandler eventHandler,
       final VariableParser variableParser,
@@ -47,7 +47,7 @@ class Context implements Closeable {
   Context(
       Clock clock,
       ContextConfig config,
-      Future<ContextData> dataFuture,
+      Future<ContextData?> dataFuture,
       Timer? scheduler,
       ContextDataProvider dataProvider,
       ContextEventHandler eventHandler,
@@ -90,7 +90,11 @@ class Context implements Closeable {
 
     if (dataFutureCheck) {
       dataFuture.then((data) {
-        setData(data);
+        if(data == null){
+          setDataFailed(Exception("No data found"));
+          logError(Exception("No data found"));
+        }
+        setData(data!);
         logEvent(EventType.Ready, data);
       }).catchError((exception) {
         setDataFailed(exception);
@@ -99,6 +103,12 @@ class Context implements Closeable {
     } else {
       readyFuture_ = Completer<Future<void>?>();
       dataFuture.then((data) {
+        if(data == null){
+          setDataFailed(Exception("No data found"));
+          readyFuture_?.complete();
+          logError(Exception("No data found"));
+          return;
+        }
         setData(data);
         readyFuture_?.complete();
         // readyFuture_ = null;
@@ -109,7 +119,6 @@ class Context implements Closeable {
       }).catchError((exception) {
         setDataFailed(exception);
         readyFuture_?.complete();
-        // readyFuture_ = null;
         logError(exception);
 
         return null;
@@ -307,17 +316,17 @@ class Context implements Closeable {
       queueExposure(assignment);
     }
 
-    return assignment.variant;
+    return assignment.variant ?? 0;
   }
 
   void queueExposure(final Assignment assignment) {
     if (!assignment.exposed) {
       assignment.exposed = true;
       final Exposure exposure = Exposure(
-          id: assignment.id,
+          id: assignment.id ?? 0,
           name: assignment.name,
           unit: assignment.unitType,
-          variant: assignment.variant,
+          variant: assignment.variant ?? 0,
           exposedAt: clock_.millis(),
           assigned: assignment.assigned,
           eligible: assignment.eligible,
@@ -343,7 +352,7 @@ class Context implements Closeable {
   Future<int> peekTreatment(final String experimentName) async {
     checkReady(true);
 
-    return (await getAssignment(experimentName)).variant;
+    return (await getAssignment(experimentName)).variant ?? 0;
   }
 
   Map<String, List<String>> getVariableKeys() {
@@ -478,12 +487,12 @@ class Context implements Closeable {
         clearRefreshTimer();
 
         if (pendingCount_ > 0) {
-          closingFuture_ = Completer<Future<void>>();
+          closingFuture_ = Completer<Future<void>?>();
 
           flush().then((x) {
             closed_ = true;
             closing_ = false;
-            closingFuture_!.complete(null);
+            closingFuture_?.complete(null);
             logEvent(EventType.Close, null);
           }).catchError((exception) {
             closed_ = true;
@@ -518,7 +527,7 @@ class Context implements Closeable {
   Future<void> flush() {
     clearTimeout();
 
-    if (!failed_!) {
+    if (!(failed_ ?? false)) {
       if (pendingCount_ > 0) {
         List<Exposure>? exposures;
         List<GoalAchievement>? achievements;
@@ -547,7 +556,7 @@ class Context implements Closeable {
 
         if (eventCount > 0) {
           List<Unit> units = [];
-          units_!.forEach((key, value) async {
+          units_?.forEach((key, value) async {
             units.add(Unit(
                 type: key, uid: utf8.decode(await getUnitHash(key, value))));
           });
@@ -556,16 +565,16 @@ class Context implements Closeable {
             hashed: true,
             units: units,
             publishedAt: clock_.millis(),
-            exposures: exposures!,
-            goals: achievements!,
-            attributes: attributes_.isEmpty ? null : attributes_.toList(),
+            exposures: exposures ?? [],
+            goals: achievements ?? [],
+            attributes: attributes_.toList(),
           );
           event.hashed = true;
           event.publishedAt = clock_.millis();
 
-          final Completer<Future<void>> result = Completer<Future<void>>();
+          final Completer<Future<void>?> result = Completer<Future<void>?>();
 
-          eventHandler_!.publish(this, event).then((value) {
+          eventHandler_?.publish(this, event).then((value) {
             logEvent(EventType.Publish, event);
             result.complete(null);
           }).catchError((error) {
@@ -729,8 +738,8 @@ class Context implements Closeable {
       }
 
       if ((experiment != null) &&
-          (assignment.variant < experiment.data.variants.length)) {
-        assignment.variables = experiment.variables[assignment.variant]!;
+          ((assignment.variant ?? 0) < experiment.data.variants.length)) {
+        assignment.variables = experiment.variables[assignment.variant ?? 0]!;
       }
 
       assignmentCache_[experimentName] = assignment;
@@ -771,6 +780,7 @@ class Context implements Closeable {
   }
 
   Future<Uint8List> getUnitHash(final String unitType, final String unitUID) {
+    return Future.value(Hashing.hashUnit(unitUID));
     return Concurrency.computeIfAbsentRW(contextLock_, hashedUnits_, unitType,
         (key) {
       return Hashing.hashUnit(unitUID);
@@ -888,7 +898,7 @@ class Context implements Closeable {
     }
   }
 
-  void setDataFailed(final Exception exception) {
+  void setDataFailed(exception) {
     try {
       dataLock_.acquireWrite();
       index_ = <String, ExperimentVariables>{};
@@ -901,10 +911,11 @@ class Context implements Closeable {
   }
 
   void logEvent(EventType event, dynamic data) {
+    print("data");
     print("${event.toString()}: ${data.toString()}");
   }
 
-  void logError(Exception error) {
+  void logError(error) {
     print("${EventType.Error.toString()}: ${error.toString()}");
   }
 
@@ -965,23 +976,23 @@ class Context implements Closeable {
 
 class ExperimentVariables {
   late Experiment data;
-  late List<Map<String, dynamic>?> variables;
+  List<Map<String, dynamic>?> variables = [];
 }
 
 class Assignment {
-  late int id;
+  int? id;
   late int iteration;
   late int fullOnVariant;
   late String name;
-  late String unitType;
+  String? unitType;
   late List<double> trafficSplit;
-  late int variant;
-  late bool assigned;
-  late bool overridden;
-  late bool eligible;
-  late bool fullOn;
-  late bool custom;
-  late bool audienceMismatch;
+  int? variant;
+  bool assigned = false;
+  bool overridden = false;
+  bool eligible= false;
+  bool fullOn = false;
+  bool custom = false;
+  bool audienceMismatch = false;
   Map<String, dynamic>? variables;
   bool exposed = false;
 }

@@ -62,7 +62,7 @@ class ABSmartly implements Closeable {
         AudienceMatcher(audienceDeserializer_!));
   }
 
-  Future<ContextData> getContextData() {
+  Future<ContextData?> getContextData() {
     return contextDataProvider_!.getContextData();
   }
 
