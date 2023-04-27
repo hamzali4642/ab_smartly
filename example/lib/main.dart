@@ -73,37 +73,17 @@ class _AbSmartlyScreenState extends State<AbSmartlyScreen> {
       ..setApplication("web")
       ..setEnvironment("prod");
 
-
     final ABSmartlyConfig sdkConfig =
         ABSmartlyConfig.create().setClient(Client.create(clientConfig));
-
     final ABSmartly sdk = ABSmartly(sdkConfig);
-
     final ContextConfig contextConfig = ContextConfig.create()
       ..setUnit("session_id", "bf06d8cb5d8137290c4abb64155584fbdb64d8")
       ..setUnit("user_id", "123456");
-
-
-
     final Context ctx = await sdk.createContext(contextConfig).waitUntilReady();
-
-
-
-
-    final int treatment = await ctx.getTreatment("exp_test_ab");
-    print(treatment);
-
-    final Map<String, dynamic> properties = {};
-    properties["value"] = 125;
-    properties["fee"] = 125;
-
-    ctx.track("payment", properties);
 
     ctx.close();
     sdk.close();
-    print("----");
     res = Helper.response ?? "";
-
     setState(() {});
     Helper.response = null;
   }

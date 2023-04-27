@@ -3,10 +3,10 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i3;
 
-import 'package:ab_smartly/context_data_provider.dart' as _i3;
-import 'package:ab_smartly/json/context_data.dart' as _i2;
+import 'package:ab_smartly/context_data_provider.dart' as _i2;
+import 'package:ab_smartly/json/context_data.dart' as _i4;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -20,41 +20,18 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeContextData_0 extends _i1.SmartFake implements _i2.ContextData {
-  _FakeContextData_0(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
 /// A class which mocks [ContextDataProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockContextDataProvider extends _i1.Mock
-    implements _i3.ContextDataProvider {
+    implements _i2.ContextDataProvider {
   @override
-  _i4.Future<_i2.ContextData> getContextData() => (super.noSuchMethod(
+  _i3.Future<_i4.ContextData?> getContextData() => (super.noSuchMethod(
         Invocation.method(
           #getContextData,
           [],
         ),
-        returnValue: _i4.Future<_i2.ContextData>.value(_FakeContextData_0(
-          this,
-          Invocation.method(
-            #getContextData,
-            [],
-          ),
-        )),
-        returnValueForMissingStub:
-            _i4.Future<_i2.ContextData>.value(_FakeContextData_0(
-          this,
-          Invocation.method(
-            #getContextData,
-            [],
-          ),
-        )),
-      ) as _i4.Future<_i2.ContextData>);
+        returnValue: _i3.Future<_i4.ContextData?>.value(),
+        returnValueForMissingStub: _i3.Future<_i4.ContextData?>.value(),
+      ) as _i3.Future<_i4.ContextData?>);
 }
