@@ -55,8 +55,6 @@ void main() {
           .setApplication('website')
           .setContextDataDeserializer(deserializer)
           .setContextEventSerializer(serializer);
-
-
       expect(config.getEndpoint(), equals('https://test.endpoint.com'));
       expect(config.getAPIKey(), equals('api-key-test'));
       expect(config.getEnvironment(), equals('test'));
