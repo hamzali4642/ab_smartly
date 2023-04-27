@@ -1,5 +1,3 @@
-
-
 class ContextConfig {
   ContextConfig();
 
@@ -29,7 +27,7 @@ class ContextConfig {
   }
 
   ContextConfig setAttributes(final Map<String, dynamic> attributes) {
-    attributes_;
+    attributes_ ??= {};
     attributes_?.addAll(attributes);
     return this;
   }
@@ -69,7 +67,6 @@ class ContextConfig {
 
   Map<String, int>? getCustomAssignments() => cassigmnents_;
 
-
   ContextConfig setPublishDelay(int delayMs) {
     publishDelay = delayMs;
     return this;
@@ -84,10 +81,10 @@ class ContextConfig {
 
   int getRefreshInterval() => refreshInterval;
 
-   Map<String, String>? units_;
-   Map<String, dynamic>? attributes_;
-   Map<String, int> overrides_ = {};
-   Map<String, int>? cassigmnents_={};
+  Map<String, String>? units_;
+  Map<String, dynamic>? attributes_;
+  Map<String, int> overrides_ = {};
+  Map<String, int>? cassigmnents_ = {};
   int publishDelay = 100;
   int refreshInterval = 0;
 }
