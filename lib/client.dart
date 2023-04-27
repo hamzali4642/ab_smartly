@@ -98,7 +98,7 @@ class Client implements Closeable {
 
     var content = serializer_?.serialize(event);
 
-    print(content);
+    print(event);
     httpClient_.put(url_, null, headers_, content).then((response) {
       final int code = response.getStatusCode() ?? 0;
       if ((code / 100) == 2) {

@@ -3,15 +3,14 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i8;
+import 'dart:async' as _i6;
 
-import 'package:ab_smartly/client.dart' as _i4;
-import 'package:ab_smartly/context_data_deserializer.dart' as _i6;
-import 'package:ab_smartly/context_event_serializer.dart' as _i7;
-import 'package:ab_smartly/executor.dart' as _i5;
+import 'package:ab_smartly/client.dart' as _i3;
+import 'package:ab_smartly/context_data_deserializer.dart' as _i4;
+import 'package:ab_smartly/context_event_serializer.dart' as _i5;
 import 'package:ab_smartly/http_client.dart' as _i2;
-import 'package:ab_smartly/json/context_data.dart' as _i3;
-import 'package:ab_smartly/json/publish_event.dart' as _i9;
+import 'package:ab_smartly/json/context_data.dart' as _i7;
+import 'package:ab_smartly/json/publish_event.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -35,20 +34,10 @@ class _FakeHTTPClient_0 extends _i1.SmartFake implements _i2.HTTPClient {
         );
 }
 
-class _FakeContextData_1 extends _i1.SmartFake implements _i3.ContextData {
-  _FakeContextData_1(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
 /// A class which mocks [Client].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockClient extends _i1.Mock implements _i4.Client {
+class MockClient extends _i1.Mock implements _i3.Client {
   @override
   String get url_ => (super.noSuchMethod(
         Invocation.getter(#url_),
@@ -112,15 +101,7 @@ class MockClient extends _i1.Mock implements _i4.Client {
         returnValueForMissingStub: null,
       );
   @override
-  set executor_(_i5.Executor? _executor_) => super.noSuchMethod(
-        Invocation.setter(
-          #executor_,
-          _executor_,
-        ),
-        returnValueForMissingStub: null,
-      );
-  @override
-  set deserializer_(_i6.ContextDataDeserializer? _deserializer_) =>
+  set deserializer_(_i4.ContextDataDeserializer? _deserializer_) =>
       super.noSuchMethod(
         Invocation.setter(
           #deserializer_,
@@ -129,7 +110,7 @@ class MockClient extends _i1.Mock implements _i4.Client {
         returnValueForMissingStub: null,
       );
   @override
-  set serializer_(_i7.ContextEventSerializer? _serializer_) =>
+  set serializer_(_i5.ContextEventSerializer? _serializer_) =>
       super.noSuchMethod(
         Invocation.setter(
           #serializer_,
@@ -138,36 +119,23 @@ class MockClient extends _i1.Mock implements _i4.Client {
         returnValueForMissingStub: null,
       );
   @override
-  _i8.Future<_i3.ContextData> getContextData() => (super.noSuchMethod(
+  _i6.Future<_i7.ContextData?> getContextData() => (super.noSuchMethod(
         Invocation.method(
           #getContextData,
           [],
         ),
-        returnValue: _i8.Future<_i3.ContextData>.value(_FakeContextData_1(
-          this,
-          Invocation.method(
-            #getContextData,
-            [],
-          ),
-        )),
-        returnValueForMissingStub:
-            _i8.Future<_i3.ContextData>.value(_FakeContextData_1(
-          this,
-          Invocation.method(
-            #getContextData,
-            [],
-          ),
-        )),
-      ) as _i8.Future<_i3.ContextData>);
+        returnValue: _i6.Future<_i7.ContextData?>.value(),
+        returnValueForMissingStub: _i6.Future<_i7.ContextData?>.value(),
+      ) as _i6.Future<_i7.ContextData?>);
   @override
-  _i8.Future<void> publish(_i9.PublishEvent? event) => (super.noSuchMethod(
+  _i6.Future<void> publish(_i8.PublishEvent? event) => (super.noSuchMethod(
         Invocation.method(
           #publish,
           [event],
         ),
-        returnValue: _i8.Future<void>.value(),
-        returnValueForMissingStub: _i8.Future<void>.value(),
-      ) as _i8.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
   @override
   void close() => super.noSuchMethod(
         Invocation.method(

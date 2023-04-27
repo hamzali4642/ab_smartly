@@ -77,8 +77,8 @@ class DefaultHTTPClient implements HTTPClient {
 
 
       case "PUT":
-        http.Response response = await client.put(Uri.parse(url + queryParams), headers: headers, body: body, );
-        // http.Response response = await client.put(Uri.parse("https://httpbin.org/put"), headers: headers, body: body, );
+        // http.Response response = await client.put(Uri.parse(url + queryParams), headers: headers, body: body, );
+        http.Response response = await client.put(Uri.parse("https://httpbin.org/put"), headers: headers, body: body, );
         return parseHttpResponse(response);
 
       default:

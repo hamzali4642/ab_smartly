@@ -163,11 +163,11 @@ class Context implements Closeable {
     return this;
   }
 
-  List<String> getExperiments() {
+  Future<List<String>> getExperiments() async {
     checkReady(true);
 
     try {
-      dataLock_.acquireRead();
+      await dataLock_.acquireRead();
       final List<String> experimentNames = List.generate(
           data_!.experiments.length, (index) => data_!.experiments[index].name);
 
@@ -312,6 +312,9 @@ class Context implements Closeable {
     checkReady(true);
 
     final Assignment assignment = await getAssignment(experimentName);
+
+    print(assignment.trafficSplit.length);
+
     if (!assignment.exposed) {
       queueExposure(assignment);
     }
@@ -985,7 +988,7 @@ class Assignment {
   late int fullOnVariant;
   late String name;
   String? unitType;
-  late List<double> trafficSplit;
+  List<double> trafficSplit = [];
   int? variant;
   bool assigned = false;
   bool overridden = false;
