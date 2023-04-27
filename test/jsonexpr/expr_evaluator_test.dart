@@ -12,6 +12,8 @@ import 'package:ab_smartly/jsonexpr/operator.mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
+// not working
+
 void main(){
   var EMPTY_MAP = {};
   var EMPTY_LIST = [];
@@ -318,5 +320,48 @@ void main(){
     expect(evaluator.compare("9", "100"), 8);
     expect(evaluator.compare("100", "9"), 8);
   });
+
+
+  test('test evaluate with a list input', () {
+    final operators = {'and': MockOperator()};
+    final vars = <String, dynamic>{};
+    final evaluator = ExprEvaluator(operators, vars);
+    final result = evaluator.evaluate([true, false]);
+    expect(result, false);
+  });
+
+  test('test evaluate with a map input', () {
+    final operators = {'>': MockOperator()};
+    final vars = <String, dynamic>{};
+    final evaluator = ExprEvaluator(operators, vars);
+    final result = evaluator.evaluate({'>': [5, 3]});
+    expect(result, true);
+  });
+
+  test('test booleanConvert with a boolean input', () {
+    final operators = <String, Operator>{};
+    final vars = <String, dynamic>{};
+    final evaluator = ExprEvaluator(operators, vars);
+    final result = evaluator.booleanConvert(true);
+    expect(result, true);
+  });
+
+  test('test booleanConvert with a string input', () {
+    final operators = <String, Operator>{};
+    final vars = <String, dynamic>{};
+    final evaluator = ExprEvaluator(operators, vars);
+    final result = evaluator.booleanConvert("true");
+    expect(result, true);
+  });
+
+  test('test numberConvert with a number input', () {
+    final operators = <String, Operator>{};
+    final vars = <String, dynamic>{};
+    final evaluator = ExprEvaluator(operators, vars);
+    final result = evaluator.numberConvert(3);
+    expect(result, 3);
+  });
+
+
 
 }

@@ -9,12 +9,6 @@ abstract class Hashing {
 
   static Uint8List threadBuffer = Uint8List.fromList(List.generate(512, (index) => 0  ));
 
-  // static ThreadLocal<Uint8List> threadBuffer = new ThreadLocal<Uint8List>() {
-  //   @Override
-  //   public byte[] initialValue() {
-  //     return new byte[512];
-  //   }
-  // };
 
   static Uint8List hashUnit(String unit) {
     final int n = unit.length;
