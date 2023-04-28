@@ -97,7 +97,7 @@ class Experiment {
     List variants = data["variants"];
     this.variants = List.generate(variants.length, (index) => ExperimentVariant.fromMap(variants[index]));
 
-    audienceStrict = data["audienceStrict"];
+    audienceStrict = data["audienceStrict"] ?? false;
     audience = data["audience"];
   }
 

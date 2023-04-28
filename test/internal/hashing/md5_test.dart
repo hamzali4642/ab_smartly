@@ -31,6 +31,8 @@ void main() {
 
     for (var testCase in testCases) {
       final key = utf8.encode(testCase[0]);
+
+      print(key);
       final actual = MD5.digestBase64UrlNoPadding(Uint8List.fromList(key));
       final expected = ascii.encode(testCase[1]);
       expect(expected, actual);
