@@ -527,7 +527,7 @@ class Context implements Closeable {
     await closeAsync();
   }
 
-  Future<void> flush() {
+  Future<Future<void>> flush() async {
     clearTimeout();
 
     if (!(failed_ ?? false)) {
@@ -559,10 +559,18 @@ class Context implements Closeable {
 
         if (eventCount > 0) {
           List<Unit> units = [];
+
+          for(var entry in units_!.entries){
+            units.add(Unit(
+                type: entry.key, uid: utf8.decode(await getUnitHash(entry.key, entry.value))));
+          }
+
           units_?.forEach((key, value) async {
             units.add(Unit(
                 type: key, uid: utf8.decode(await getUnitHash(key, value))));
           });
+
+          print(attributes_.length);
 
           final PublishEvent event = PublishEvent(
             hashed: true,

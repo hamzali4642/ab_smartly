@@ -875,14 +875,14 @@ class MockContext extends _i1.Mock implements _i5.Context {
         returnValueForMissingStub: _i16.Future<void>.value(),
       ) as _i16.Future<void>);
   @override
-  _i16.Future<void> flush() => (super.noSuchMethod(
+  _i16.Future<Future<void>> flush() => (super.noSuchMethod(
         Invocation.method(
           #flush,
           [],
         ),
         returnValue: _i16.Future<void>.value(),
-        returnValueForMissingStub: _i16.Future<void>.value(),
-      ) as _i16.Future<void>);
+        returnValueForMissingStub: _i16.Future<Future<void>>.value(),
+      ) as _i16.Future<Future<void>>);
   @override
   void checkNotClosed() => super.noSuchMethod(
         Invocation.method(
