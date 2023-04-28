@@ -10,8 +10,6 @@ import 'package:mockito/annotations.dart';
 
  class DefaultContextDataDeserializer implements ContextDataDeserializer {
 
-
-
    @override
   ContextData? deserialize(final List<int> bytes, final int offset, final int length) {
      try {
