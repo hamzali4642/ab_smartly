@@ -77,7 +77,7 @@ class Experiment {
     return "ContextExperiment{id=$id, name='$name', unitType='$unitType', iteration=$iteration, seedHi=$seedHi, seedLo=$seedLo, split=$split, trafficSeedHi=$trafficSeedHi, trafficSeedLo=$trafficSeedLo, trafficSplit=$trafficSplit, fullOnVariant=$fullOnVariant, applications=$applications, variants=$variants, audienceStrict=$audienceStrict, audience='$audience'}";
   }
 
-  Experiment.fromMap(Map<String, dynamic> data){
+  Experiment.fromMap(Map<String, dynamic> data) {
     id = data["id"];
     name = data["name"];
     unitType = data["unitType"];
@@ -89,38 +89,43 @@ class Experiment {
     trafficSeedHi = data["trafficSeedHi"];
     trafficSeedLo = data["trafficSeedLo"];
     List trafficSplit = data["trafficSplit"];
-    this.trafficSplit = List.generate(trafficSplit.length, (index) => trafficSplit[index]);
+    this.trafficSplit =
+        List.generate(trafficSplit.length, (index) => trafficSplit[index]);
     fullOnVariant = data["fullOnVariant"];
     List applications = data["applications"] ?? [];
-    this.applications = List.generate(applications.length, (index) => ExperimentApplication.fromMap(applications[index]));
+    this.applications = List.generate(applications.length,
+        (index) => ExperimentApplication.fromMap(applications[index]));
 
     List variants = data["variants"];
-    this.variants = List.generate(variants.length, (index) => ExperimentVariant.fromMap(variants[index]));
+    this.variants = List.generate(
+        variants.length, (index) => ExperimentVariant.fromMap(variants[index]));
 
     audienceStrict = data["audienceStrict"] ?? false;
     audience = data["audience"];
   }
 
-  Map<String, dynamic> toMap(){
-    List applications = List.generate(this.applications.length, (index) => this.applications[index].toMap());
-    List variants = List.generate(this.variants.length, (index) => this.variants[index].toMap());
+  Map<String, dynamic> toMap() {
+    List applications = List.generate(
+        this.applications.length, (index) => this.applications[index].toMap());
+    List variants = List.generate(
+        this.variants.length, (index) => this.variants[index].toMap());
 
     return {
-      "id" : id,
-      "name" : name,
-      "unitType" : unitType,
-      "iteration" : iteration,
-      "seedHi" : seedHi,
-      "seedLo" : seedLo,
-      "split" : split,
-      "trafficSeedHi" : trafficSeedHi,
-      "trafficSeedLo" : trafficSeedLo,
-      "trafficSplit" : trafficSplit,
-      "fullOnVariant" : fullOnVariant,
-      "applications" : applications,
-      "variants" : variants,
-      "audienceStrict" : audienceStrict,
-      "audience" : audience,
+      "id": id,
+      "name": name,
+      "unitType": unitType,
+      "iteration": iteration,
+      "seedHi": seedHi,
+      "seedLo": seedLo,
+      "split": split,
+      "trafficSeedHi": trafficSeedHi,
+      "trafficSeedLo": trafficSeedLo,
+      "trafficSplit": trafficSplit,
+      "fullOnVariant": fullOnVariant,
+      "applications": applications,
+      "variants": variants,
+      "audienceStrict": audienceStrict,
+      "audience": audience,
     };
   }
 }

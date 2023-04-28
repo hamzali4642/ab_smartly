@@ -9,6 +9,7 @@ abstract class Hashing {
 
   static Uint8List threadBuffer = Uint8List.fromList(List.generate(512, (index) => 0  ));
 
+
   static Uint8List hashUnit(String unit) {
     final int n = unit.length;
     final int bufferLen = n << 1;

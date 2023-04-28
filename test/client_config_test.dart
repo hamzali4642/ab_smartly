@@ -5,6 +5,8 @@ import 'package:ab_smartly/context_event_serializer.dart';
 import 'package:ab_smartly/context_event_serializer.mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+
+// all working
 void main() {
   group('ClientConfig', ()
   {

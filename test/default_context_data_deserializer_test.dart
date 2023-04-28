@@ -11,9 +11,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'test_utils.dart';
 
+// one not working
+
 void main() {
   group("DefaultContextDataDeserializerTest", () {
     test("deserialize", () async {
+      WidgetsFlutterBinding.ensureInitialized();
       final Uint8List bytes = Uint8List.fromList(await getResourceBytes("context.json"));
 
       final ContextDataDeserializer deser = DefaultContextDataDeserializer();
@@ -116,6 +119,7 @@ void main() {
 
     });
 
+    // not working
     test('deserializeDoesNotThrow', () async{
       final bytes = await getResourceBytes('context.json');
       final deser = DefaultContextDataDeserializer();

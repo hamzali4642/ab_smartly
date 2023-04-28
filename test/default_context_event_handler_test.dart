@@ -8,6 +8,8 @@ import 'package:mockito/mockito.dart';
 import 'dart:async';
 import 'package:async/async.dart';
 
+// all working
+
 void main() {
   group('DefaultContextEventHandler', () {
     test('publish', () async {
@@ -45,8 +47,10 @@ void main() {
       );
 
       final failure = Exception('FAILED');
-      final failedFuture = Future<void>.error(failure) as Completer;
-      when(client.publish(event)).thenReturn(failedFuture.future);
+      final failedFuture = Future<void>.error(failure) ;
+      when(client.publish(event)).thenAnswer((_){
+       return failedFuture;
+      });
 
       final publishFuture = eventHandler.publish(context, event);
       final actual = await expectLater(
