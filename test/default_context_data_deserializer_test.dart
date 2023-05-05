@@ -128,7 +128,5 @@ void main() {
         expect(data, isNull);
       }, returnsNormally);
     });
-
-
   });
 }
