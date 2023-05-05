@@ -19,8 +19,8 @@ void main() {
       final operator = EqualsOperator();
       final evaluator =
           MockEvaluator(); // replace with your own evaluator implementation
-      final lhs = 'hello';
-      final rhs = 'world';
+      const lhs = 'hello';
+      const rhs = 'world';
       final result = operator.binary(evaluator, lhs, rhs);
       expect(result, isFalse);
     });

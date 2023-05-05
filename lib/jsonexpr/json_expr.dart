@@ -31,13 +31,13 @@ class JsonExpr {
     'lte': LessThenOrEqualOperator(),
   };
 
-  bool evaluateBooleanExpr(dynamic expr, Map<String, dynamic> vars) {
+  bool evaluateBooleanExpr(dynamic expr, Map<String?, dynamic> vars) {
    final evaluator = ExprEvaluator(operators, vars);
 
     return evaluator.booleanConvert(evaluator.evaluate(expr));
   }
 
-  dynamic evaluateExpr(dynamic expr, Map<String, dynamic> vars) {
+  dynamic evaluateExpr(dynamic expr, Map<String?, dynamic> vars) {
     final evaluator = ExprEvaluator(operators, vars);
 
     return evaluator.evaluate(expr);

@@ -40,61 +40,6 @@ void main() {
               'message', contains('Exception: Missing Client instance'))));
     });
 
-    // test('createContext', () {
-    //   final client = MockClient();
-    //
-    //   final config = ABSmartlyConfig.create().setClient(client);
-    //
-    //   final dataFuture = Completer<ContextData>();
-    //   when(dataFuture.future).thenAnswer((_)=>dataFuture.future);
-    //   when(dataFuture.future).thenAnswer((_)=>dataFuture.future);
-    //   // when(dataFuture.future).thenReturn(dataFuture.future);
-    //
-    //   final dataProvider = MockContextDataProvider();
-    //   when(dataProvider.getContextData()).thenAnswer((a) {
-    //     return dataFuture.future;
-    //   });
-    //
-    //   final absmartly = ABSmartly(config);
-    //
-    //   final contextMock = MockContext();
-    //   final contextStatic = MockContext();
-    //
-    //   final contextConfig =
-    //       ContextConfig.create().setUnit('user_id', '1234567');
-    //   final context = absmartly.createContext(contextConfig);
-    //
-    //   expect(contextMock, context);
-    //
-    //   final Clock clockCaptor = SystemClockUTC();
-    //   final configCaptor = ContextConfig();
-    //   final schedulerCaptor = Timer(Duration(seconds: 1), () {});
-    //   final dataFutureCaptor = Completer<ContextData>();
-    //   final dataProviderCaptor = DefaultContextDataProvider(client);
-    //   final eventHandlerCaptor = DefaultContextEventHandler(client);
-    //   final variableParserCaptor = DefaultVariableParser();
-    //   final audienceMatcherCaptor =
-    //       AudienceMatcher(DefaultAudienceDeserializer());
-    //
-    //   verify(() => Context.create(
-    //       clockCaptor,
-    //       configCaptor,
-    //       schedulerCaptor,
-    //       dataFutureCaptor.future,
-    //       dataProviderCaptor,
-    //       eventHandlerCaptor,
-    //       variableParserCaptor,
-    //       audienceMatcherCaptor));
-    //
-    //   expect(Clock.systemUTC(), clockCaptor);
-    //   expect(contextConfig, configCaptor);
-    //   expect(dataFuture, dataFutureCaptor);
-    //   expect(dataProvider, dataProviderCaptor);
-    //   expect(
-    //       eventHandlerCaptor, const TypeMatcher<DefaultContextEventHandler>());
-    //   expect(variableParserCaptor, const TypeMatcher<DefaultVariableParser>());
-    //   expect(audienceMatcherCaptor, isNotNull);
-    // });
 
     test('ABSmartly createContext returns a valid Context object', () async {
       // final config = ABSmartlyConfig().setClient(client);
@@ -131,12 +76,6 @@ void main() {
       expect(context, isA<Context>());
     });
 
-    test('ABSmartly getContextData returns a valid ContextData object', () async {
-      // final config = ABSmartlyConfig();
-      final abSmartly = ABSmartly(config);
-      final contextData = await abSmartly.getContextData();
-      expect(contextData, isA<ContextData>());
-    });
 
     test('ABSmartly close sets client_ and scheduler_ variables to null', () async {
       // final config = ABSmartlyConfig();

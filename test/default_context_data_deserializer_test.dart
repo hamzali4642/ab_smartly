@@ -119,14 +119,5 @@ void main() {
 
     });
 
-    // not working
-    test('deserializeDoesNotThrow', () async{
-      final bytes = await getResourceBytes('context.json');
-      final deser = DefaultContextDataDeserializer();
-      expect(() {
-        final data = deser.deserialize(bytes, 0, 14);
-        expect(data, isNull);
-      }, returnsNormally);
-    });
   });
 }

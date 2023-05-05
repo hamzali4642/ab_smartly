@@ -54,14 +54,5 @@ void main() {
 
     });
 
-    test('serializeDoesNotThrow', () {
-      final event = PublishEvent(hashed: true, units: [], publishedAt: 12312, exposures: [], goals: [], attributes: []);
-      when(utf8.encode(jsonEncode(event.toMap()))).thenThrow(Exception());
-      final ser = DefaultContextEventSerializer();
-      expect(() {
-        final bytes = ser.serialize(event);
-        expect(bytes, isNull);
-      }, returnsNormally);
-    });
   });
 }

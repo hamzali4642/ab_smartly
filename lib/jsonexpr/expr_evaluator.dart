@@ -14,7 +14,7 @@ class ExprEvaluator extends Evaluator {
   }
 
   final Map<String, Operator> operators;
-  final Map<String, dynamic> vars;
+  final Map<String?, dynamic> vars;
 
   ExprEvaluator(this.operators, this.vars);
 
@@ -23,7 +23,7 @@ class ExprEvaluator extends Evaluator {
     if (expr is List) {
       return operators['and']?.evaluate(this, expr);
     } else if (expr is Map) {
-      final map = expr as Map<String, Object>;
+      final map = expr as Map<String?, Object>;
       for (final entry in map.entries) {
         final op = operators[entry.key];
         if (op != null) {
