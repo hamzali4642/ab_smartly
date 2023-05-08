@@ -12,8 +12,6 @@ import 'package:ab_smartly/jsonexpr/operator.mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
-// not working
-
 void main(){
   var EMPTY_MAP = {};
   var EMPTY_LIST = [];
