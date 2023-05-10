@@ -9,7 +9,6 @@ import 'default_http_client_config.dart';
 import 'java_system_classes/closeable.dart';
 import 'context_data_deserializer.dart';
 import 'context_event_serializer.dart';
-import 'executor.dart';
 import 'http_client.dart';
 import 'json/context_data.dart';
 import 'json/publish_event.dart';

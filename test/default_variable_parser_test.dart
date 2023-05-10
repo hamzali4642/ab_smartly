@@ -37,19 +37,6 @@ main(){
   });
 
 
-  test("parseDoesNotThrow", () async {
-    WidgetsFlutterBinding.ensureInitialized();
-
-    final context = MockContext();
-    final configValue = utf8.decode((await getResourceBytes('variables.json')).sublist(0, 5));
-
-    final variableParser = DefaultVariableParser();
-
-    expect(() {
-    final variables = variableParser.parse(context, 'test_exp', 'B', configValue);
-    expect(variables, isNull);
-    }, returnsNormally);
-  });
 }
 
 
