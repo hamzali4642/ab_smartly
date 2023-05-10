@@ -387,34 +387,32 @@ void main() {
       context.waitUntilReady();
     });
 
-    // test("setOverride", () {
-    //   final Context context = createReadyContext(null);
-    //
-    //   context.setOverride("exp_test", 2);
-    //
-    //   expect(2, context.getOverride("exp_test"));
-    //
-    //   context.setOverride("exp_test", 3);
-    //   expect(3, context.getOverride("exp_test"));
-    //
-    //   context.setOverride("exp_test_2", 1);
-    //   expect(1, context.getOverride("exp_test_2"));
-    //
-    //   final Map<String, int> overrides = {
-    //     "exp_test_new": 3,
-    //     "exp_test_new_2": 5
-    //   };
-    //
-    //   context.setOverrides(overrides);
-    //
-    //   expect(3, context.getOverride("exp_test"));
-    //   expect(1, context.getOverride("exp_test_2"));
-    //   overrides.forEach((experimentName, variant) =>
-    //       expect(variant, context.getOverride(experimentName)));
-    //
-    //   expect(null, context.getOverride("exp_test_not_found"));
-    // });
-    //
+    test("setOverride", () {
+      final Context context = createReadyContext(null);
+
+      context.setOverride("exp_test", 2);
+
+      expect(2, context.getOverride("exp_test"));
+
+      context.setOverride("exp_test", 3);
+      expect(3, context.getOverride("exp_test"));
+
+      context.setOverride("exp_test_2", 1);
+      expect(1, context.getOverride("exp_test_2"));
+
+      final Map<String, int> overrides = {
+        "exp_test_new": 3,
+        "exp_test_new_2": 5
+      };
+
+      context.setOverrides(overrides);
+
+      expect(3, context.getOverride("exp_test"));
+      expect(1, context.getOverride("exp_test_2"));
+      overrides.forEach((experimentName, variant) =>
+          expect(variant, context.getOverride(experimentName)));
+    });
+
     // test("setOverrideClearsAssignmentCache", () {
     //   final Context context = createReadyContext(null);
     //
@@ -470,32 +468,31 @@ void main() {
       expect(5, context.getOverride("exp_test_new_2"));
     });
 
-    // test("setCustomAssignment", () {
-    //   final Context context = createReadyContext(null);
-    //   context.setCustomAssignment("exp_test", 2);
-    //
-    //   expect(2, context.getCustomAssignment("exp_test"));
-    //
-    //   context.setCustomAssignment("exp_test", 3);
-    //   expect(3, context.getCustomAssignment("exp_test"));
-    //
-    //   context.setCustomAssignment("exp_test_2", 1);
-    //   expect(1, context.getCustomAssignment("exp_test_2"));
-    //
-    //   final Map<String, int> cassignments = {
-    //     "exp_test_new": 3,
-    //     "exp_test_new_2": 5
-    //   };
-    //
-    //   context.setCustomAssignments(cassignments);
-    //
-    //   expect(3, context.getCustomAssignment("exp_test"));
-    //   expect(1, context.getCustomAssignment("exp_test_2"));
-    //   cassignments.forEach((experimentName, variant) =>
-    //       expect(variant, context.getCustomAssignment(experimentName)));
-    //
-    //   expect(null, context.getCustomAssignment("exp_test_not_found"));
-    // });
+    test("setCustomAssignment", () {
+      final Context context = createReadyContext(null);
+      context.setCustomAssignment("exp_test", 2);
+
+      expect(2, context.getCustomAssignment("exp_test"));
+
+      context.setCustomAssignment("exp_test", 3);
+      expect(3, context.getCustomAssignment("exp_test"));
+
+      context.setCustomAssignment("exp_test_2", 1);
+      expect(1, context.getCustomAssignment("exp_test_2"));
+
+      final Map<String, int> cassignments = {
+        "exp_test_new": 3,
+        "exp_test_new_2": 5
+      };
+
+      context.setCustomAssignments(cassignments);
+
+      expect(3, context.getCustomAssignment("exp_test"));
+      expect(1, context.getCustomAssignment("exp_test_2"));
+      cassignments.forEach((experimentName, variant) =>
+          expect(variant, context.getCustomAssignment(experimentName)));
+
+    });
     //
     // test("setCustomAssignmentDoesNotOverrideFullOnOrNotEligibleAssignments",
     //     () {
@@ -723,7 +720,11 @@ void main() {
     // test("getTreatment", () {
     //   final Context context = createReadyContext(null);
     //
+    //   print("-----");
+    //   print(data.experiments);
     //   data.experiments.forEach((experiment) {
+    //     print(expectedVariants[experiment.name]);
+    //     print(experiment.variants);
     //     expect(expectedVariants[experiment.name], experiment.variants);
     //   });
     //
