@@ -451,7 +451,7 @@ class Context implements Closeable {
     return pendingCount_;
   }
 
-  Future<void> refreshAsync() {
+  Future<void>? refreshAsync() {
     checkNotClosed();
 
     if (!refreshing_) {

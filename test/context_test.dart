@@ -15,6 +15,7 @@ import 'package:ab_smartly/json/attribute.dart';
 import 'package:ab_smartly/json/context_data.dart';
 import 'package:ab_smartly/json/experiment.dart';
 import 'package:ab_smartly/json/exposure.dart';
+import 'package:ab_smartly/json/goal_achievement.dart';
 import 'package:ab_smartly/json/publish_event.dart';
 import 'package:ab_smartly/json/unit.dart';
 import 'package:ab_smartly/variable_parser.dart';
@@ -151,7 +152,6 @@ void main() {
           dataProvider, eventHandler, variableParser, audienceMatcher);
     }
 
-
     test('becomesReadyWithCompletedFuture', () async {
       final context = createReadyContext(null);
 
@@ -238,10 +238,8 @@ void main() {
       dataFuture.complete(data);
       context.waitUntilReady();
 
-
-      when(dataProvider.getContextData()).thenAnswer((_)=> refreshDataFutureReady);
-
-
+      when(dataProvider.getContextData())
+          .thenAnswer((_) => refreshDataFutureReady);
     });
 
     test("setUnits", () {
@@ -490,6 +488,95 @@ void main() {
           attributes: []);
 
       context.publish();
+    });
+
+    test("getVariableKeys", () async {
+      final Context context = createContext(null, refreshDataFutureReady);
+      await context.waitUntilReady();
+      expect(variableExperiments, context.getVariableKeys());
+    });
+
+
+    test("track", () {
+      final Context context = createReadyContext(null);
+      context.track("goal1", {"amount": 125, "hours": 245});
+      context.track("goal2", {"tries": 7});
+
+      expect(2, context.getPendingCount());
+
+      context.track("goal2", {"tests": 12});
+      context.track("goal3", null);
+
+      expect(4, context.getPendingCount());
+
+      final PublishEvent expected = PublishEvent(
+          hashed: true,
+          units: publishUnits,
+          publishedAt: clock.millis(),
+          exposures: [],
+          goals: [],
+          attributes: []);
+
+      expected.goals = [
+        GoalAchievement(
+            name: "goal1",
+            achievedAt: clock.millis(),
+            properties: {"amount": 125, "hours": 245}),
+        GoalAchievement(name: "goal2", achievedAt: clock.millis(), properties: {
+          "tries": 7,
+        }),
+        GoalAchievement(
+            name: "goal2",
+            achievedAt: clock.millis(),
+            properties: {"tests": 12}),
+        GoalAchievement(
+            name: "goal3", achievedAt: clock.millis(), properties: null),
+      ];
+      context.publish();
+      context.close();
+    });
+
+    test("peekVariableValue", () async {
+      final Context context = createReadyContext(null);
+      await context.waitUntilReady();
+      final Set<String> experiments =
+          data.experiments.map((x) => x.name).toSet();
+
+      print(variableExperiments);
+      for (var entry in variableExperiments.entries) {
+        var variable = entry.key;
+        var experimentNames = entry.value;
+
+        final String experimentName = experimentNames[0];
+
+        final actual = await context.peekVariableValue(variable, 17);
+        final eligible = experimentName != "exp_test_not_eligible";
+
+        if (!(eligible && experiments.contains(experimentName))) {
+          expect(actual, equals(17));
+
+        }
+      }
+
+      expect(context.getPendingCount(), equals(0));
+    });
+
+    test("refreshAsync", () async {
+      final Context context = createReadyContext(null);
+      await context.waitUntilReady();
+      when(dataProvider.getContextData())
+          .thenAnswer((_) => refreshDataFuture.future);
+
+      final refreshFuture = context.refreshAsync();
+      final refreshFutureNext = context.refreshAsync();
+
+      expect(refreshFuture, same(refreshFutureNext));
+
+      verify(dataProvider.getContextData()).called(1);
+
+      final experiments = refreshData.experiments.map((x) => x.name).toList()..remove("exp_test_new");
+      print(experiments);
+      expect(await context.getExperiments(), equals(experiments));
     });
   });
 }
