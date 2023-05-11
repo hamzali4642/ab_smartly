@@ -319,6 +319,7 @@ class Context implements Closeable {
       queueExposure(assignment);
     }
 
+    print(assignment.variant);
     return assignment.variant ?? 0;
   }
 
@@ -527,7 +528,7 @@ class Context implements Closeable {
     await closeAsync();
   }
 
-  Future<Future<void>> flush() async {
+  Future<Future<void>?> flush() async {
     clearTimeout();
 
     if (!(failed_ ?? false)) {
@@ -713,9 +714,15 @@ class Context implements Closeable {
             if (uid != null) {
               final Uint8List unitHash = await getUnitHash(unitType, uid);
 
+              print("-");
+
               final VariantAssigner assigner =
                   await getVariantAssigner(unitType, unitHash);
-              final bool eligible = assigner.assign(
+
+              print("-");
+              print(assigner);
+
+              final bool eligible = assigner?.assign(
                       experiment.data.trafficSplit,
                       experiment.data.trafficSeedHi,
                       experiment.data.trafficSeedLo) ==
@@ -725,7 +732,7 @@ class Context implements Closeable {
                   assignment.variant = custom;
                   assignment.custom = true;
                 } else {
-                  assignment.variant = assigner.assign(experiment.data.split,
+                  assignment.variant = assigner?.assign(experiment.data.split,
                       experiment.data.seedHi, experiment.data.seedLo);
                 }
               } else {
@@ -750,7 +757,7 @@ class Context implements Closeable {
 
       if ((experiment != null) &&
           ((assignment.variant ?? 0) < experiment.data.variants.length)) {
-        assignment.variables = experiment.variables[assignment.variant ?? 0]!;
+        assignment.variables = experiment.variables[assignment.variant ?? 0];
       }
 
       assignmentCache_[experimentName] = assignment;

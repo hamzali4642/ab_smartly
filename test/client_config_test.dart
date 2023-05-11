@@ -5,14 +5,12 @@ import 'package:ab_smartly/context_event_serializer.dart';
 import 'package:ab_smartly/context_event_serializer.mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-
 // all working
 void main() {
-  group('ClientConfig', ()
-  {
+  group('ClientConfig', () {
     test('setEndpoint', () {
-      final config = ClientConfig.create().setEndpoint(
-          'https://test.endpoint.com');
+      final config =
+          ClientConfig.create().setEndpoint('https://test.endpoint.com');
       expect(config.getEndpoint(), equals('https://test.endpoint.com'));
     });
 
@@ -33,21 +31,21 @@ void main() {
 
     test('setContextDataDeserializer', () {
       final deserializer = MockContextDataDeserializer();
-      final config = ClientConfig.create().setContextDataDeserializer(
-          deserializer);
+      final config =
+          ClientConfig.create().setContextDataDeserializer(deserializer);
       expect(config.getContextDataDeserializer(), equals(deserializer));
     });
 
     test('setContextEventSerializer', () {
       final serializer = MockContextEventSerializer();
-      final config = ClientConfig.create().setContextEventSerializer(
-          serializer);
+      final config =
+          ClientConfig.create().setContextEventSerializer(serializer);
       expect(config.getContextEventSerializer(), equals(serializer));
     });
 
-
     test('setAll', () {
-      final ContextDataDeserializer deserializer = MockContextDataDeserializer();
+      final ContextDataDeserializer deserializer =
+          MockContextDataDeserializer();
       final ContextEventSerializer serializer = MockContextEventSerializer();
 
       final config = ClientConfig.create()
@@ -64,5 +62,28 @@ void main() {
       expect(config.getContextDataDeserializer(), equals(deserializer));
       expect(config.getContextEventSerializer(), equals(serializer));
     });
+  });
+
+  test("createFromProperties", () {
+    var props = {
+      "absmartly.endpoint": "https://test.endpoint.com",
+      "absmartly.environment": "test",
+      "absmartly.apikey": "api-key-test",
+      "absmartly.application": "website"
+    };
+
+    final ContextEventSerializer serializer = MockContextEventSerializer();
+    final ContextDataDeserializer deserializer = MockContextDataDeserializer();
+    final ClientConfig config =
+        ClientConfig.createFromProperties(props, "absmartly.")
+            .setContextDataDeserializer(deserializer)
+            .setContextEventSerializer(serializer);
+
+    expect("https://test.endpoint.com", config.getEndpoint());
+    expect("api-key-test", config.getAPIKey());
+    expect("test", config.getEnvironment());
+    expect("website", config.getApplication());
+    expect(deserializer, config.getContextDataDeserializer());
+    expect(serializer, config.getContextEventSerializer());
   });
 }

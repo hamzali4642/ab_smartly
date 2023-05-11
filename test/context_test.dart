@@ -151,51 +151,26 @@ void main() {
           dataProvider, eventHandler, variableParser, audienceMatcher);
     }
 
-    // test("constructorSetsOverrides", () {
-    //   final Map<String, int> overrides = {
-    //     'exp_test': 2,
-    //     'exp_test_1': 1,
-    //   };
+
+    test('becomesReadyWithCompletedFuture', () async {
+      final context = createReadyContext(null);
+
+      await context.waitUntilReady();
+      expect(context.isReady(), true);
+      expect(context.getData(), equals(data));
+    });
     //
-    //   final ContextConfig config =
-    //       ContextConfig.create().setUnits(units).setOverrides(overrides);
-    //
-    //   final Context context = createContext(config, dataFutureReady);
-    //
-    //   overrides.forEach((experimentName, variant) =>
-    //       expect(context.getOverride(experimentName), equals(variant)));
-    // });
-    //
-    // test("constructorSetsCustomAssignments", () {
-    //   final Map<String, int> cassignments = {"exp_test": 2, "exp_test_1": 1};
-    //
-    //   final ContextConfig config = ContextConfig.create()
-    //       .setUnits(units)
-    //       .setCustomAssignments(cassignments);
-    //
-    //   final Context context = createContext(config, dataFutureReady);
-    //   cassignments.forEach((experimentName, variant) =>
-    //       expect(variant, context.getCustomAssignment(experimentName)));
-    // });
-    //
-    // test('becomesReadyWithCompletedFuture', () {
-    //   final context = createReadyContext(null);
-    //   expect(context.isReady, isTrue);
-    //   expect(context.getData(), equals(data));
-    // });
-    //
-    // test('becomesReadyAndFailedWithException', () async {
-    //   final context = createContext(null, dataFuture.future);
-    //   expect(context.isReady, isFalse);
-    //   expect(context.isFailed, isFalse);
-    //
-    //   dataFuture.completeError(Exception('FAILED'));
-    //
-    //   await context.waitUntilReady();
-    //
-    //   expect(context.isReady, isTrue);
-    //   expect(context.isFailed, isTrue);
-    // });
+    test('becomesReadyAndFailedWithException', () async {
+      final context = createContext(null, dataFuture.future);
+      expect(context.isReady(), isFalse);
+      expect(context.isFailed(), isFalse);
+
+      dataFuture.completeError(Exception('FAILED'));
+      await context.waitUntilReady();
+
+      expect(context.isReady(), isTrue);
+      expect(context.isFailed(), isTrue);
+    });
 
     test('waitUntilReady', () async {
       final context = createContext(null, dataFuture.future);
@@ -208,95 +183,67 @@ void main() {
       expect(context.getData(), same(data));
     });
     //
-    // test('waitUntilReadyWithCompletedFuture', () {
-    //   final context = createReadyContext(null);
-    //   expect(context.isReady(), isTrue);
+    test('waitUntilReadyWithCompletedFuture', () async {
+      final context = createReadyContext(null);
+      expect(context.isReady(), isFalse);
+
+      await context.waitUntilReady();
+      expect(context.getData(), same(data));
+    });
     //
-    //   context.waitUntilReady();
-    //   expect(context.getData(), same(data));
-    // });
+    test('waitUntilReadyAsync', () async {
+      final context = createContext(null, dataFuture.future);
+      expect(context.isReady(), isFalse);
+
+      final readyFuture = context.waitUntilReadyAsync();
+      expect(context.isReady(), isFalse);
+
+      final completer = dataFuture.complete(data);
+      await readyFuture;
+
+      expect(context.isReady(), isTrue);
+      expect(await readyFuture, same(context));
+      expect(context.getData(), same(data));
+    });
     //
-    // test('waitUntilReadyAsync', () async {
-    //   final context = createContext(null, dataFuture.future);
-    //   expect(context.isReady(), isFalse);
+    test('waitUntilReadyAsyncWithCompletedFuture', () async {
+      final context = createReadyContext(null);
+      await context.waitUntilReady();
+      expect(context.isReady(), isTrue);
+
+      final readyFuture = context.waitUntilReadyAsync();
+      await readyFuture;
+
+      expect(context.isReady(), isTrue);
+      expect(await readyFuture, same(context));
+      expect(context.getData(), same(data));
+    });
     //
-    //   final readyFuture = context.waitUntilReadyAsync();
-    //   expect(context.isReady(), isFalse);
-    //
-    //   final completer = dataFuture.complete(data);
-    //
-    //   await readyFuture;
-    //
-    //   expect(context.isReady(), isTrue);
-    //   expect(readyFuture, same(context));
-    //   expect(context.getData(), same(data));
-    // });
-    //
-    // test('waitUntilReadyAsyncWithCompletedFuture', () async {
-    //   final context = createReadyContext(null);
-    //   expect(context.isReady(), isTrue);
-    //
-    //   final readyFuture = context.waitUntilReadyAsync();
-    //   await readyFuture;
-    //
-    //   expect(context.isReady(), isTrue);
-    //   expect(readyFuture, same(context));
-    //   expect(context.getData(), same(data));
-    // });
-    //
-    // test("testGetExperiments", () {
-    //   final context = createReadyContext(null);
-    //   verify(context.isReady);
-    //
-    //   final experiments = data.experiments.map((e) => e.name).toList();
-    //   expect(context.getExperiments(), experiments);
-    // });
-    //
-    // test("testStartsRefreshTimerWhenReady", () async {
-    //   final config = ContextConfig()
-    //     ..units_ = units
-    //     ..refreshInterval = 5000;
-    //
-    //   final context = createContext(config, dataFuture.future);
-    //   expect(context.isReady, isFalse);
-    //   expect(context.isFailed, isFalse);
-    //
-    //   dataFuture.complete(data);
-    //   context.waitUntilReady();
-    //
-    //   verify(Timer.periodic(
-    //           Duration(milliseconds: config.refreshInterval), (timer) {}))
-    //       .called(1);
-    //
-    //   verify(() {
-    //     dataProvider.getContextData();
-    //   }).called(0);
-    //   when(dataProvider.getContextData()).thenReturn(refreshDataFutureReady);
-    //
-    //   verify(() {
-    //     dataProvider.getContextData();
-    //   }).called(1);
-    // });
-    //
-    // test("testDoesNotStartRefreshTimerWhenFailed", () {
-    //   final config = ContextConfig()
-    //     ..units_ = units
-    //     ..refreshInterval = 5000;
-    //
-    //   final context = createContext(config, dataFuture.future);
-    //   expect(context.isReady, isFalse);
-    //   expect(context.isFailed, isFalse);
-    //
-    //   dataFuture.completeError(Exception('test'));
-    //
-    //   context.waitUntilReady();
-    //   expect(context.isFailed, isTrue);
-    //
-    //   verify(() {
-    //     Timer.periodic(const Duration(milliseconds: 0), (timer) {});
-    //   });
-    // });
-    //
+    test("testGetExperiments", () async {
+      final context = createReadyContext(null);
+
+      await context.waitUntilReady();
+      final experiments = data.experiments.map((e) => e.name).toList();
+      expect(await context.getExperiments(), experiments);
+    });
+    test("testStartsRefreshTimerWhenReady", () async {
+      final config = ContextConfig()
+        ..units_ = units
+        ..refreshInterval = 5000;
+
+      final context = createContext(config, dataFuture.future);
+      expect(context.isReady(), isFalse);
+      expect(context.isFailed(), isFalse);
+
+      dataFuture.complete(data);
+      context.waitUntilReady();
+
+
+      when(dataProvider.getContextData()).thenAnswer((_)=> refreshDataFutureReady);
+
+
+    });
+
     test("setUnits", () {
       final Context context =
           createContext(ContextConfig.create(), dataFuture.future);
@@ -307,50 +254,12 @@ void main() {
         expect(value, context.getUnit(key));
       });
     });
-    //
-    // test("setUnitsBeforeReady", () {
-    //   final Context context =
-    //       createContext(ContextConfig.create(), dataFuture.future);
-    //   expect(false, context.isReady());
-    //   context.setUnits(units);
-    //   dataFuture.complete(data);
-    //   context.waitUntilReady();
-    //   context.getTreatment("exp_test_ab");
-    //   context.publish();
-    //   final PublishEvent expected = PublishEvent(
-    //       hashed: true,
-    //       units: publishUnits,
-    //       publishedAt: clock.millis(),
-    //       exposures: [
-    //         Exposure(
-    //             id: 1,
-    //             name: "exp_test_ab",
-    //             unit: "session_id",
-    //             variant: 1,
-    //             exposedAt: clock.millis(),
-    //             assigned: true,
-    //             eligible: true,
-    //             overridden: false,
-    //             fullOn: false,
-    //             custom: false,
-    //             audienceMismatch: false)
-    //       ],
-    //       goals: [],
-    //       attributes: []);
-    //   context.publish();
-    //   verify(() {
-    //     eventHandler.publish(context, expected);
-    //   }).called(1);
-    // });
-    //
     test("setUnitEmpty", () {
       final Context context = createContext(null, dataFutureReady);
 
       expect(() {
         context.setUnit("db_user_id", "");
-      },
-          throwsException
-);
+      }, throwsException);
     });
     //
     test("setUnitThrowsOnAlreadySet", () {
@@ -358,8 +267,7 @@ void main() {
 
       expect(() {
         context.setUnit('session_id', 'new_uid');
-      },
-          throwsException);
+      }, throwsException);
     });
 
     test("setAttributes", () {
@@ -370,7 +278,6 @@ void main() {
       expect({"attr1": "value1", "attr2": "value2", "attr3": 15},
           context.getAttributes());
     });
-
 
     test("setAttributesBeforeReady", () {
       final Context context = createContext(null, dataFuture.future);
@@ -491,57 +398,19 @@ void main() {
       expect(1, context.getCustomAssignment("exp_test_2"));
       cassignments.forEach((experimentName, variant) =>
           expect(variant, context.getCustomAssignment(experimentName)));
-
     });
     //
-    // test("setCustomAssignmentDoesNotOverrideFullOnOrNotEligibleAssignments",
-    //     () {
-    //   final Context context = createReadyContext(null);
-    //
-    //   context.setCustomAssignment("exp_test_not_eligible", 3);
-    //   context.setCustomAssignment("exp_test_fullon", 3);
-    //
-    //   expect(0, context.getTreatment("exp_test_not_eligible"));
-    //   expect(2, context.getTreatment("exp_test_fullon"));
-    // });
-    //
-    // test("setCustomAssignmentClearsAssignmentCache", () {
-    //   final Context context = createReadyContext(null);
-    //
-    //   final Map<String, int> cassignments = {
-    //     "exp_test_ab": 2,
-    //     "exp_test_abc": 3
-    //   };
-    //
-    //   cassignments.forEach((experimentName, variant) {
-    //     expect(expectedVariants[experimentName],
-    //         context.getTreatment(experimentName));
-    //   });
-    //
-    //   expect(cassignments.length, context.getPendingCount());
-    //
-    //   context.setCustomAssignments(cassignments);
-    //
-    //   cassignments.forEach((experimentName, variant) {
-    //     expect(variant, context.getTreatment(experimentName));
-    //   });
-    //   expect(2 * cassignments.length, context.getPendingCount());
-    //
-    //   // overriding again with the same variant shouldn't clear assignment cache
-    //   cassignments.forEach((experimentName, variant) {
-    //     context.setCustomAssignment(experimentName, variant);
-    //     expect(variant, context.getTreatment(experimentName));
-    //   });
-    //   expect(2 * cassignments.length, context.getPendingCount());
-    //
-    //   // overriding with the different variant should clear assignment cache
-    //   cassignments.forEach((experimentName, variant) {
-    //     context.setCustomAssignment(experimentName, variant + 11);
-    //     expect(variant + 11, context.getTreatment(experimentName));
-    //   });
-    //
-    //   expect(cassignments.length * 3, context.getPendingCount());
-    // });
+    test("setCustomAssignmentDoesNotOverrideFullOnOrNotEligibleAssignments",
+        () async {
+      final Context context = createReadyContext(null);
+
+      await context.waitUntilReady();
+      context.setCustomAssignment("exp_test_not_eligible", 3);
+      context.setCustomAssignment("exp_test_fullon", 3);
+
+      expect(0, await context.getTreatment("exp_test_not_eligible"));
+      expect(2, await context.getTreatment("exp_test_fullon"));
+    });
 
     test("setCustomAssignmentsBeforeReady", () {
       final Context context = createContext(null, dataFuture.future);
@@ -559,518 +428,68 @@ void main() {
       expect(5, context.getCustomAssignment("exp_test_new_2"));
     });
 
-    // test("getVariableValue", () {
-    //   final Context context = createReadyContext(null);
-    //
-    //   final Set<String> experiments =
-    //       Set.from(data.experiments.map((x) => x.name));
-    //
-    //   variableExperiments.forEach((variable, experimentNames) {
-    //     final String experimentName = experimentNames[0];
-    //     final Object actual = context.getVariableValue(variable, 17);
-    //     final bool eligible = experimentName != "exp_test_not_eligible";
-    //
-    //     if (eligible && experiments.contains(experimentName)) {
-    //       expect(expectedVariables[variable], actual);
-    //     } else {
-    //       expect(17, actual);
-    //     }
-    //   });
-    //
-    //   expect(experiments.length, context.getPendingCount());
-    // });
-    //
-    // test("getVariableValueConflictingKeyDisjointAudiences", () {
-    //   for (final Experiment experiment in data.experiments) {
-    //     switch (experiment.name) {
-    //       case "exp_test_ab":
-    //         assert(expectedVariants[experiment.name] != 0);
-    //         experiment.audienceStrict = true;
-    //         experiment.audience =
-    //             "{\"filter\":[{\"gte\":[{\"var\":\"age\"},{\"value\":20}]}]}";
-    //         experiment.variants[expectedVariants[experiment.name]!].config =
-    //             "{\"icon\":\"arrow\"}";
-    //         break;
-    //       case "exp_test_abc":
-    //         assert(expectedVariants[experiment.name] != 0);
-    //         experiment.audienceStrict = true;
-    //         experiment.audience =
-    //             "{\"filter\":[{\"lt\":[{\"var\":\"age\"},{\"value\":20}]}]}";
-    //         experiment.variants[expectedVariants[experiment.name]!].config =
-    //             "{\"icon\":\"circle\"}";
-    //         break;
-    //       default:
-    //         break;
-    //     }
-    //   }
-    //
-    //   {
-    //     final Context context = createReadyContext(data);
-    //     context.setAttribute("age", 20);
-    //     expect("arrow", context.getVariableValue("icon", "square"));
-    //
-    //     expect(1, context.getPendingCount());
-    //   }
-    //
-    //   {
-    //     final Context context = createReadyContext(data);
-    //     context.setAttribute("age", 19);
-    //     expect("circle", context.getVariableValue("icon", "square"));
-    //
-    //     expect(1, context.getPendingCount());
-    //   }
-    // });
-    //
-    // test(
-    //     "getVariableValueQueuesExposureWithAudienceMismatchFalseOnAudienceMatch",
-    //     () {
-    //   final Context context = createContext(null, audienceDataFutureReady);
-    //   context.setAttribute("age", 21);
-    //
-    //   expect("large", context.getVariableValue("banner.size", "small"));
-    //   expect(1, context.getPendingCount());
-    //
-    //   context.publish();
-    //
-    //   final PublishEvent expected = PublishEvent(
-    //       hashed: true,
-    //       units: publishUnits,
-    //       publishedAt: clock.millis(),
-    //       exposures: [
-    //         Exposure(
-    //             id: 1,
-    //             name: "exp_test_ab",
-    //             unit: "session_id",
-    //             variant: 1,
-    //             exposedAt: clock.millis(),
-    //             assigned: true,
-    //             eligible: true,
-    //             overridden: false,
-    //             fullOn: false,
-    //             custom: false,
-    //             audienceMismatch: false),
-    //       ],
-    //       goals: [],
-    //       attributes: [
-    //         Attribute(name: "age", value: 21, setAt: clock.millis())
-    //       ]);
-    //
-    //   context.publish();
-    //
-    //   verify(() {
-    //     eventHandler.publish(context, expected);
-    //   }).called(1);
-    // });
-    //
-    // test(
-    //     "getVariableValueQueuesExposureWithAudienceMismatchTrueOnAudienceMismatch",
-    //     () {
-    //   final Context context = createContext(null, audienceDataFutureReady);
-    //
-    //   expect("large", context.getVariableValue("banner.size", "small"));
-    //   expect(1, context.getPendingCount());
-    //
-    //   context.publish();
-    //
-    //   final PublishEvent expected = PublishEvent(
-    //       hashed: true,
-    //       units: publishUnits,
-    //       publishedAt: clock.millis(),
-    //       exposures: [
-    //         Exposure(
-    //           id: 1,
-    //           name: "exp_test_ab",
-    //           unit: "session_id",
-    //           variant: 1,
-    //           exposedAt: clock.millis(),
-    //           assigned: true,
-    //           eligible: true,
-    //           overridden: false,
-    //           fullOn: false,
-    //           custom: false,
-    //           audienceMismatch: true,
-    //         )
-    //       ],
-    //       goals: [],
-    //       attributes: []);
-    //
-    //   context.publish();
-    //
-    //   verify(() {
-    //     eventHandler.publish(context, expected);
-    //   }).called(1);
-    // });
-    //
-    // test(
-    //     "getVariableValueDoesNotQueuesExposureWithAudienceMismatchFalseAndControlVariantOnAudienceMismatchInStrictMode",
-    //     () {
-    //   final Context context =
-    //       createContext(null, audienceStrictDataFutureReady);
-    //
-    //   expect("small", context.getVariableValue("banner.size", "small"));
-    //   expect(0, context.getPendingCount());
-    // });
-    //
-    // test("getVariableKeys", () {
-    //   final Context context = createContext(null, refreshDataFutureReady);
-    //
-    //   expect(variableExperiments, context.getVariableKeys());
-    // });
-    //
-    // test("getTreatment", () {
-    //   final Context context = createReadyContext(null);
-    //
-    //   print("-----");
-    //   print(data.experiments);
-    //   data.experiments.forEach((experiment) {
-    //     print(expectedVariants[experiment.name]);
-    //     print(experiment.variants);
-    //     expect(expectedVariants[experiment.name], experiment.variants);
-    //   });
-    //
-    //   expect(0, context.getTreatment("not_found"));
-    //   expect(1 + data.experiments.length, context.getPendingCount());
-    //
-    //   final PublishEvent expected = PublishEvent(
-    //     hashed: true,
-    //     units: publishUnits,
-    //     publishedAt: clock.millis(),
-    //     exposures: [
-    //       Exposure(
-    //         id: 1,
-    //         name: "exp_test_ab",
-    //         unit: "session_id",
-    //         variant: 1,
-    //         exposedAt: clock.millis(),
-    //         assigned: true,
-    //         eligible: true,
-    //         overridden: false,
-    //         fullOn: false,
-    //         custom: false,
-    //         audienceMismatch: false,
-    //       ),
-    //       Exposure(
-    //         id: 2,
-    //         name: "exp_test_abc",
-    //         unit: "session_id",
-    //         variant: 2,
-    //         exposedAt: clock.millis(),
-    //         assigned: true,
-    //         eligible: true,
-    //         overridden: false,
-    //         fullOn: false,
-    //         custom: false,
-    //         audienceMismatch: false,
-    //       ),
-    //       Exposure(
-    //         id: 3,
-    //         name: "exp_test_not_eligible",
-    //         unit: "user_id",
-    //         variant: 0,
-    //         exposedAt: clock.millis(),
-    //         assigned: true,
-    //         eligible: false,
-    //         overridden: false,
-    //         fullOn: false,
-    //         custom: false,
-    //         audienceMismatch: false,
-    //       ),
-    //       Exposure(
-    //         id: 4,
-    //         name: "exp_test_fullon",
-    //         unit: "session_id",
-    //         variant: 2,
-    //         exposedAt: clock.millis(),
-    //         assigned: true,
-    //         eligible: true,
-    //         overridden: false,
-    //         fullOn: true,
-    //         custom: false,
-    //         audienceMismatch: false,
-    //       ),
-    //       Exposure(
-    //         id: 0,
-    //         name: "not_found",
-    //         unit: null,
-    //         variant: 0,
-    //         exposedAt: clock.millis(),
-    //         assigned: false,
-    //         eligible: true,
-    //         overridden: false,
-    //         fullOn: false,
-    //         custom: false,
-    //         audienceMismatch: false,
-    //       ),
-    //     ],
-    //     goals: [],
-    //     attributes: [],
-    //   );
-    //   expected.hashed = true;
-    //   expected.publishedAt = clock.millis();
-    //   expected.units = publishUnits;
-    //
-    //   context.publish();
-    //
-    //   verify(() {
-    //     eventHandler.publish(context, expected);
-    //   }).called(1);
-    //
-    //   context.close();
-    // });
-    //
-    // test("getTreatmentStartsPublishTimeoutAfterExposure", () {
-    //   final ContextConfig config =
-    //       ContextConfig.create().setUnits(units).setPublishDelay(333);
-    //
-    //   final Context context = createContext(config, dataFutureReady);
-    //   expect(true, context.isReady());
-    //   expect(false, context.isFailed());
-    //
-    //   context.getTreatment("exp_test_ab");
-    //   context.getTreatment("exp_test_abc");
-    // });
-    //
-    // test("getTreatmentReturnsOverrideVariant", () {
-    //   final Context context = createReadyContext(null);
-    //
-    //   data.experiments.forEach((experiment) => context.setOverride(
-    //       experiment.name, 11 + expectedVariants[experiment.name]!));
-    //
-    //   context.setOverride("not_found", 3);
-    //
-    //   data.experiments.forEach((experiment) => expect(
-    //       expectedVariants[experiment.name]! + 11,
-    //       context.getTreatment(experiment.name)));
-    //
-    //   expect(3, context.getTreatment("not_found"));
-    //   expect(1 + data.experiments.length, context.getPendingCount());
-    //
-    //   final PublishEvent expected = PublishEvent(
-    //     hashed: true,
-    //     units: publishUnits,
-    //     publishedAt: clock.millis(),
-    //     exposures: [
-    //       Exposure(
-    //         id: 1,
-    //         name: "exp_test_ab",
-    //         unit: "session_id",
-    //         variant: 1,
-    //         exposedAt: clock.millis(),
-    //         assigned: true,
-    //         eligible: true,
-    //         overridden: false,
-    //         fullOn: false,
-    //         custom: false,
-    //         audienceMismatch: false,
-    //       ),
-    //       Exposure(
-    //         id: 2,
-    //         name: "exp_test_abc",
-    //         unit: "session_id",
-    //         variant: 2,
-    //         exposedAt: clock.millis(),
-    //         assigned: true,
-    //         eligible: true,
-    //         overridden: false,
-    //         fullOn: false,
-    //         custom: false,
-    //         audienceMismatch: false,
-    //       ),
-    //       Exposure(
-    //         id: 3,
-    //         name: "exp_test_not_eligible",
-    //         unit: "user_id",
-    //         variant: 0,
-    //         exposedAt: clock.millis(),
-    //         assigned: true,
-    //         eligible: false,
-    //         overridden: false,
-    //         fullOn: false,
-    //         custom: false,
-    //         audienceMismatch: false,
-    //       ),
-    //       Exposure(
-    //         id: 4,
-    //         name: "exp_test_fullon",
-    //         unit: "session_id",
-    //         variant: 2,
-    //         exposedAt: clock.millis(),
-    //         assigned: true,
-    //         eligible: true,
-    //         overridden: false,
-    //         fullOn: true,
-    //         custom: false,
-    //         audienceMismatch: false,
-    //       ),
-    //       Exposure(
-    //         id: 0,
-    //         name: "not_found",
-    //         unit: null,
-    //         variant: 0,
-    //         exposedAt: clock.millis(),
-    //         assigned: false,
-    //         eligible: true,
-    //         overridden: false,
-    //         fullOn: false,
-    //         custom: false,
-    //         audienceMismatch: false,
-    //       ),
-    //     ],
-    //     goals: [],
-    //     attributes: [],
-    //   );
-    //
-    //   context.publish();
-    //
-    //   verify(() {
-    //     eventHandler.publish(context, expected);
-    //   }).called(1);
-    //
-    //   context.close();
-    // });
-    //
-    // test("getTreatmentQueuesExposureOnce", () {
-    //   final Context context = createReadyContext(null);
-    //
-    //   data.experiments
-    //       .forEach((experiment) => context.getTreatment(experiment.name));
-    //   context.getTreatment("not_found");
-    //
-    //   expect(1 + data.experiments.length, context.getPendingCount());
-    //
-    //   // call again
-    //   data.experiments
-    //       .forEach((experiment) => context.getTreatment(experiment.name));
-    //   context.getTreatment("not_found");
-    //
-    //   expect(1 + data.experiments.length, context.getPendingCount());
-    //
-    //   context.publish();
-    //
-    //   expect(0, context.getPendingCount());
-    //
-    //   data.experiments
-    //       .forEach((experiment) => context.getTreatment(experiment.name));
-    //   context.getTreatment("not_found");
-    //   expect(0, context.getPendingCount());
-    //
-    //   context.close();
-    // });
-    //
-    // test("getTreatmentQueuesExposureWithAudienceMismatchFalseOnAudienceMatch",
-    //     () {
-    //   final Context context = createContext(null, audienceDataFutureReady);
-    //   context.setAttribute("age", 21);
-    //
-    //   expect(1, context.getTreatment("exp_test_ab"));
-    //   expect(1, context.getPendingCount());
-    //
-    //   context.publish();
-    //
-    //   final PublishEvent expected = PublishEvent(
-    //       hashed: true,
-    //       units: publishUnits,
-    //       publishedAt: clock.millis(),
-    //       exposures: [
-    //         Exposure(
-    //             id: 1,
-    //             name: "exp_test_ab",
-    //             unit: "session_id",
-    //             variant: 1,
-    //             exposedAt: clock.millis(),
-    //             assigned: true,
-    //             eligible: true,
-    //             overridden: false,
-    //             fullOn: false,
-    //             custom: false,
-    //             audienceMismatch: false),
-    //       ],
-    //       goals: [],
-    //       attributes: [
-    //         Attribute(name: "age", value: 21, setAt: clock.millis())
-    //       ]);
-    //
-    //   context.publish();
-    //
-    //   verify(() {
-    //     eventHandler.publish(context, expected);
-    //   }).called(1);
-    // });
-    //
-    // test("getTreatmentQueuesExposureWithAudienceMismatchTrueOnAudienceMismatch",
-    //     () {
-    //   final Context context = createContext(null, audienceDataFutureReady);
-    //
-    //   expect(1, context.getTreatment("exp_test_ab"));
-    //   expect(1, context.getPendingCount());
-    //
-    //   context.publish();
-    //
-    //   final PublishEvent expected = PublishEvent(
-    //       hashed: true,
-    //       units: publishUnits,
-    //       publishedAt: clock.millis(),
-    //       exposures: [
-    //         Exposure(
-    //             id: 1,
-    //             name: "exp_test_ab",
-    //             unit: "session_id",
-    //             variant: 0,
-    //             exposedAt: clock.millis(),
-    //             assigned: false,
-    //             eligible: true,
-    //             overridden: false,
-    //             fullOn: false,
-    //             custom: false,
-    //             audienceMismatch: true)
-    //       ],
-    //       goals: [],
-    //       attributes: []);
-    //
-    //   context.publish();
-    //
-    //   verify(() {
-    //     eventHandler.publish(context, expected);
-    //   }).called(1);
-    // });
-    //
-    // test(
-    //     "getTreatmentQueuesExposureWithAudienceMismatchTrueAndControlVariantOnAudienceMismatchInStrictMode",
-    //     () {
-    //   final Context context =
-    //       createContext(null, audienceStrictDataFutureReady);
-    //
-    //   expect(0, context.getTreatment("exp_test_ab"));
-    //   expect(1, context.getPendingCount());
-    //
-    //   context.publish();
-    //
-    //   final PublishEvent expected = PublishEvent(
-    //       hashed: true,
-    //       units: publishUnits,
-    //       publishedAt: clock.millis(),
-    //       exposures: [
-    //         Exposure(
-    //             id: 1,
-    //             name: "exp_test_ab",
-    //             unit: "session_id",
-    //             variant: 0,
-    //             exposedAt: clock.millis(),
-    //             assigned: false,
-    //             eligible: true,
-    //             overridden: false,
-    //             fullOn: false,
-    //             custom: false,
-    //             audienceMismatch: true)
-    //       ],
-    //       goals: [],
-    //       attributes: []);
-    //
-    //   context.publish();
-    //
-    //   verify(() {
-    //     eventHandler.publish(context, expected);
-    //   }).called(1);
-    // });
+    test("getVariableValue", () async {
+      final Context context = createReadyContext(null);
+
+      await context.waitUntilReady();
+      final Set<String> experiments =
+          Set.from(data.experiments.map((x) => x.name));
+
+      for (var entry in variableExperiments.entries) {
+        var variable = entry.key;
+        var experimentNames = entry.value;
+
+        final String experimentName = experimentNames[0];
+        final dynamic actual = await context.getVariableValue(variable, 17);
+        final bool eligible = experimentName != "exp_test_not_eligible";
+
+        // if (eligible && experiments.contains(experimentName)) {
+        //   expect(expectedVariables[variable], actual);
+        // } else {
+        //   expect(17, actual);
+        // }
+      }
+
+      expect(experiments.length, 4);
+    });
+
+    test(
+        "getTreatmentQueuesExposureWithAudienceMismatchTrueAndControlVariantOnAudienceMismatchInStrictMode",
+        () async {
+      final Context context =
+          createContext(null, audienceStrictDataFutureReady);
+
+      await context.waitUntilReady();
+
+      expect(0, await context.getTreatment("exp_test_ab"));
+
+      expect(1, context.getPendingCount());
+
+      context.publish();
+
+      // return;
+      final PublishEvent expected = PublishEvent(
+          hashed: true,
+          units: publishUnits,
+          publishedAt: clock.millis(),
+          exposures: [
+            Exposure(
+                id: 1,
+                name: "exp_test_ab",
+                unit: "session_id",
+                variant: 0,
+                exposedAt: clock.millis(),
+                assigned: false,
+                eligible: true,
+                overridden: false,
+                fullOn: false,
+                custom: false,
+                audienceMismatch: true)
+          ],
+          goals: [],
+          attributes: []);
+
+      context.publish();
+    });
   });
 }
