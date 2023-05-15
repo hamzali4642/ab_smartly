@@ -159,13 +159,13 @@ void main() {
       expect(context.isReady(), true);
       expect(context.getData(), equals(data));
     });
-    //
+
     test('becomesReadyAndFailedWithException', () async {
       final context = createContext(null, dataFuture.future);
       expect(context.isReady(), isFalse);
       expect(context.isFailed(), isFalse);
 
-      dataFuture.completeError(Exception('FAILED'));
+      context.setDataFailed(Exception("FAILED"));
       await context.waitUntilReady();
 
       expect(context.isReady(), isTrue);

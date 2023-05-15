@@ -92,12 +92,15 @@ class Context implements Closeable {
       dataFuture.then((data) {
         if(data == null){
           setDataFailed(Exception("No data found"));
+
           logError(Exception("No data found"));
         }
         setData(data!);
         logEvent(EventType.Ready, data);
       }).catchError((exception) {
         setDataFailed(exception);
+
+
         logError(exception);
       });
     } else {
@@ -117,11 +120,11 @@ class Context implements Closeable {
           setTimeout();
         }
       }).catchError((exception) {
-        setDataFailed(exception);
-        readyFuture_?.complete();
-        logError(exception);
 
-        return null;
+        // setDataFailed(exception);
+        // readyFuture_?.complete();
+        // logError(exception);
+        // return null;
       });
     }
   }
@@ -313,13 +316,10 @@ class Context implements Closeable {
 
     final Assignment assignment = await getAssignment(experimentName);
 
-    print(assignment.trafficSplit.length);
-
     if (!assignment.exposed) {
       queueExposure(assignment);
     }
 
-    print(assignment.variant);
     return assignment.variant ?? 0;
   }
 
@@ -571,8 +571,6 @@ class Context implements Closeable {
                 type: key, uid: utf8.decode(await getUnitHash(key, value))));
           });
 
-          print(attributes_.length);
-
           final PublishEvent event = PublishEvent(
             hashed: true,
             units: units,
@@ -714,13 +712,9 @@ class Context implements Closeable {
             if (uid != null) {
               final Uint8List unitHash = await getUnitHash(unitType, uid);
 
-              print("-");
-
               final VariantAssigner assigner =
                   await getVariantAssigner(unitType, unitHash);
 
-              print("-");
-              print(assigner);
 
               final bool eligible = assigner?.assign(
                       experiment.data.trafficSplit,
@@ -929,7 +923,6 @@ class Context implements Closeable {
   }
 
   void logEvent(EventType event, dynamic data) {
-    print("data");
     print("${event.toString()}: ${data.toString()}");
   }
 
