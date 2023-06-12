@@ -26,6 +26,7 @@ class ExprEvaluator extends Evaluator {
       final map = expr as Map<String?, dynamic>;
       for (final entry in map.entries) {
         final op = operators[entry.key];
+        print(op);
         if (op != null) {
           return op.evaluate(this, entry.value);
         }

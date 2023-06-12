@@ -3,20 +3,20 @@ import 'binary_operator.dart';
 
 class InOperator extends BinaryOperator {
   @override
-  dynamic binary(Evaluator evaluator, dynamic haystack, dynamic needle) {
-    if (haystack is List) {
-      for (final item in haystack as List<dynamic>) {
-        if (evaluator.compare(item, needle) == 0) {
+  dynamic binary(Evaluator evaluator, dynamic lhs, dynamic rhs) {
+    if (lhs is List) {
+      for (final item in lhs) {
+        if (evaluator.compare(item, rhs) == 0) {
           return true;
         }
       }
       return false;
-    } else if (haystack is String) {
-      final needleString = evaluator.stringConvert(needle);
-      return needleString != null && (haystack as String).contains(needleString);
-    } else if (haystack is Map) {
-      final needleString = evaluator.stringConvert(needle);
-      return needleString != null && (haystack as Map<String, dynamic>).containsKey(needleString);
+    } else if (lhs is String) {
+      final needleString = evaluator.stringConvert(rhs);
+      return needleString != null && (lhs).contains(needleString);
+    } else if (lhs is Map) {
+      final needleString = evaluator.stringConvert(rhs);
+      return needleString != null && (lhs as Map<String, dynamic>).containsKey(needleString);
     }
     return null;
   }
