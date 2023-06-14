@@ -1,3 +1,5 @@
+import 'context_event_logger.dart';
+
 class ContextConfig {
   ContextConfig();
 
@@ -79,6 +81,16 @@ class ContextConfig {
     return this;
   }
 
+
+  ContextEventLogger? getContextEventLogger(){
+    return logger_;
+  }
+
+  void setContextEventLogger(ContextEventLogger logger) {
+    logger_ = logger;
+  }
+
+
   int getRefreshInterval() => refreshInterval;
 
   Map<String, String>? units_;
@@ -87,4 +99,8 @@ class ContextConfig {
   Map<String, int>? cassigmnents_ = {};
   int publishDelay = 100;
   int refreshInterval = 0;
+
+
+  ContextEventLogger? logger_;
+
 }

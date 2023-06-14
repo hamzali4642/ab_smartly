@@ -55,7 +55,33 @@ contexts. In addition, an event logger can be specified when creating a
 particular context, in the `[CONTEXT_CONFIG_VARIABLE]`.
 
 ```
-Custom Event Logger Code
+class CustomEventLogger implements ContextEventLogger {
+  @override
+  void handleEvent(Context context, EventType event, dynamic data) {
+    switch (event) {
+      case EventType.Exposure:
+        final Exposure exposure = data;
+        print("exposed to experiment ${exposure.name}");
+        break;
+      case EventType.Goal:
+        final GoalAchievement goal = data;
+        print("goal tracked: ${goal.name}");
+        break;
+      case EventType.Error:
+        print("error: $data");
+        break;
+      case EventType.Publish:
+      case EventType.Ready:
+      case EventType.Refresh:
+      case EventType.Close:
+        break;
+    }
+  }
+}
+```
+
+```
+    contextConfig.setContextEventLogger(CustomEventLogger());
 ```
 
 The data parameter depends on the type of event. Currently, the SDK logs the
@@ -213,11 +239,16 @@ During development, for example, it is useful to force a treatment for an experi
 
 Attributes are used to pass meta-data about the user and/or the request.
 They can be used later in the Web Console to create segments or audiences.
-They can be set using the `[ATTRIBUTE_METHOD]()` or `[ATTRIBUTES_METHOD]()`
+They can be set using the `setAttribute()` or `setAttributes()`
 methods, before or after the context is ready.
 
 ```
-Atrribute and Attributes methods example
+context.setAttribute("attribute", 1);
+    context.setAttributes(
+      {
+        "attribute": 1,
+      },
+    );
 ```
 
 ### Custom Assignments
@@ -225,18 +256,19 @@ Atrribute and Attributes methods example
 Sometimes it may be necessary to override the automatic selection of a
 variant. For example, if you wish to have your variant chosen based on
 data from an API call. This can be accomplished using the
-`[CUSTOM_ASSIGNMENT_METHOD]()` method.
+`setCustomAssignment()` method.
 
 ```
-CustomAssignment method example
+    context.setCustomAssignment("experimentName", 1);
+    context.setCustomAssignments({"experimentName": 1});
 ```
 
 If you are running multiple experiments and need to choose different
 custom assignments for each one, you can do so using the
-`[CUSTOM_ASSIGNMENTS_METHOD]()` method.
+`getCustomAssignment()` method.
 
 ```
-CustomAssignments method example
+    context.getCustomAssignment("experimentName");
 ```
 
 ### Publish
