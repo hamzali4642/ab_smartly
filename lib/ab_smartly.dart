@@ -11,7 +11,6 @@ import 'context.dart';
 import 'context_config.dart';
 import 'context_data_provider.dart';
 import 'context_event_handler.dart';
-import 'context_event_logger.dart';
 import 'default_audience_deserializer.dart';
 import 'default_context_data_provider.dart';
 import 'default_context_event_handler.dart';

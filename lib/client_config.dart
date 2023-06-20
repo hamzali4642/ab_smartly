@@ -5,7 +5,6 @@ import 'package:ab_smartly/default_context_data_serializer.dart';
 import 'context_data_deserializer.dart';
 import 'context_event_serializer.dart';
 import 'default_context_event_serializer.dart';
-import 'executor.dart';
 
 class ClientConfig {
   static ClientConfig create() {

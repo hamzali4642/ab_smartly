@@ -1,5 +1,4 @@
 import 'context.dart';
-import 'package:mockito/annotations.dart';
 
 // @GenerateNiceMocks([MockSpec<ContextEventLogger>()])
 //

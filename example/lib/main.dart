@@ -4,9 +4,14 @@ import 'package:ab_smartly/client.dart';
 import 'package:ab_smartly/client_config.dart';
 import 'package:ab_smartly/context.dart';
 import 'package:ab_smartly/context_config.dart';
+import 'package:ab_smartly/context_event_logger.dart';
+import 'package:ab_smartly/context_event_logger.dart';
 import 'package:ab_smartly/default_http_client.dart';
 import 'package:ab_smartly/default_http_client_config.dart';
 import 'package:ab_smartly/helper/funtions.dart';
+import 'package:ab_smartly/json/attribute.dart';
+import 'package:ab_smartly/json/exposure.dart';
+import 'package:ab_smartly/json/goal_achievement.dart';
 import 'package:flutter/material.dart';
 
 Future<void> main() async {
@@ -73,30 +78,72 @@ class _AbSmartlyScreenState extends State<AbSmartlyScreen> {
       ..setApplication("web")
       ..setEnvironment("prod");
 
+
+    
     final ABSmartlyConfig sdkConfig =
         ABSmartlyConfig.create().setClient(Client.create(clientConfig));
     final ABSmartly sdk = ABSmartly(sdkConfig);
     final ContextConfig contextConfig = ContextConfig.create()
-
       ..setUnit("user_id", "123456");
-    final Context ctx = await sdk.createContext(contextConfig).waitUntilReady();
 
-    print(ctx.units_);
+    contextConfig.setContextEventLogger(CustomEventLogger());
 
-    final int treatment = await ctx.getTreatment("exp_test_ab");
+    final Context context =
+        await sdk.createContext(contextConfig).waitUntilReady();
+
+    context.refresh();
+    print(context.units_);
+
+    final int treatment = await context.getTreatment("exp_test_ab");
     print(treatment);
 
     final Map<String, dynamic> properties = {};
     properties["value"] = 125;
     properties["fee"] = 125;
 
-    ctx.track("payment", properties);
+    context.setCustomAssignment("experimentName", 1);
+    context.setCustomAssignments({"experimentName": 1});
 
+    context.getCustomAssignment("experimentName");
 
-    ctx.close();
+    context.setAttribute("attribute", 1);
+    context.setAttributes(
+      {
+        "attribute": 1,
+      },
+    );
+
+    context.track("payment", properties);
+
+    context.close();
     sdk.close();
     res = Helper.response ?? "";
     setState(() {});
     Helper.response = null;
+  }
+}
+
+
+class CustomEventLogger implements ContextEventLogger {
+  @override
+  void handleEvent(Context context, EventType event, dynamic data) {
+    switch (event) {
+      case EventType.Exposure:
+        final Exposure exposure = data;
+        print("exposed to experiment ${exposure.name}");
+        break;
+      case EventType.Goal:
+        final GoalAchievement goal = data;
+        print("goal tracked: ${goal.name}");
+        break;
+      case EventType.Error:
+        print("error: $data");
+        break;
+      case EventType.Publish:
+      case EventType.Ready:
+      case EventType.Refresh:
+      case EventType.Close:
+        break;
+    }
   }
 }
